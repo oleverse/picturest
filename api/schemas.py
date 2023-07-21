@@ -23,7 +23,7 @@ class PictureBase(BaseModel):
 
 class PictureCreate(BaseModel):
     description: Optional[str]
-    tags: Optional[List[str]]
+    tags: Optional[str]
 
 
 class PictureResponse(PictureBase):
