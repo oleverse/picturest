@@ -2,7 +2,7 @@
 REST API for working with pictures in a cloud.
 
 1. Clone the repository and navigate to its root directory:  
-`git clone git@github.com:oleverse/picturest.git`  
+`git clone -b dev git@github.com:oleverse/picturest.git`  
 `cd picturest`  
 2. Create virtual environment and activate it:
 - with `poetry`:  
