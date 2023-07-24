@@ -49,3 +49,13 @@ async def remove_picture(picture_id: int, db: Session = Depends(get_db)):
     if picture is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
     return picture
+
+
+@router.get("/by_tag/{tag_name}", response_model=List[PictureResponse])
+async def get_pictures_by_tag(tag_name: str, db: Session = Depends(get_db)
+                                 ):
+    # current_user: User = Depends(auth_service.get_current_user)
+    pictures = await repository_pictures.get_picture_by_tag(tag_name, db)
+    if not pictures:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Picture with tag {tag_name} not found")
+    return pictures
