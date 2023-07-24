@@ -18,6 +18,10 @@ class CloudImage:
         return r
 
     @staticmethod
+    def destroy(public_id):
+        cloudinary.uploader.destroy(public_id=public_id)
+
+    @staticmethod
     def get_url_for_picture(public_id, r):
         src_url = cloudinary.CloudinaryImage(public_id) \
             .build_url(width=250, height=250, crop='fill', version=r.get('version'))
