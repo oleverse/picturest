@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from typing import List, Optional
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, validator
 
 
 class TagModel(BaseModel):
@@ -9,7 +9,7 @@ class TagModel(BaseModel):
 
 class TagResponse(TagModel):
     id: int
-    user_id: Optional[int]
+    # user_id: Optional[int]
 
     class Config:
         orm_mode = True
@@ -23,7 +23,13 @@ class PictureBase(BaseModel):
 
 class PictureCreate(BaseModel):
     description: Optional[str]
-    tags: Optional[str]
+    tags: Optional[list[str]]
+
+    @validator("tags")
+    def validate_tags(cls, val):
+        if len(val) > 5:
+            raise ValueError("Too many tags. Only 5 tags allowed.")
+        return val
 
 
 class PictureResponse(PictureBase):
