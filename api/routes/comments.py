@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from api.database.db import get_db
+from api.database.models import Role, User
 from api.repository.comment_service import (
     create_comment, update_comment, delete_comment_by_id, get_comment_by_id
 )
@@ -47,3 +48,17 @@ async def get_comment(comment_id: int, db: Session = Depends(get_db)):
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
     return comment
+
+
+@router.delete("/{comment_id}", response_model=CommentResponse)
+async def delete_comment_by_id(
+    comment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    comment = get_comment_by_id(db, comment_id)
+    if not comment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
+    if current_user.role.name not in [Role.admin, Role.moderator]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You don't have permission to delete comments")
+    return delete_comment(db, comment_id)
