@@ -26,3 +26,4 @@ def healthchecker(db: Session = Depends(get_db)):
 @app.get("/")
 async def root():
     return {"message": "Welcome!"}
+
