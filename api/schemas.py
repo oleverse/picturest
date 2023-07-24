@@ -13,7 +13,7 @@ class TagResponse(TagModel):
     # user_id: Optional[int]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PictureBase(BaseModel):
@@ -39,7 +39,7 @@ class PictureResponse(PictureBase):
     tags: Optional[List[TagResponse]]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Додав схеми для коментарів
 class CommentBase(BaseModel):
@@ -57,4 +57,4 @@ class CommentResponse(CommentBase):
     edited_at: Optional[datetime]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
