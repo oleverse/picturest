@@ -4,16 +4,14 @@ from sqlalchemy.orm import Session
 
 from api.database.models import Picture, User, Tag
 from api.schemas import PictureCreate, PictureBase
+from api.repository.tags import create_tag
 
-
-async def create_picture(request: Request, description: str, tags: List, file_path: str, db: Session):
-
-    tags_list = transformation_list_to_tag(tags, db)
+async def create_picture(request: Request, description: str, tags: List[str], file_path: str, db: Session):
+    tags_list = [await create_tag(db, tag_name) for tag_name in tags]
     picture = Picture(picture_url=file_path, description=description, tags=tags_list)
     db.add(picture)
     db.commit()
     db.refresh(picture)
-    # , user_id = user.id
     return picture
 
 
