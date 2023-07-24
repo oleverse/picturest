@@ -1,15 +1,15 @@
 from typing import List
-
+from fastapi import Request
 from sqlalchemy.orm import Session
 
 from api.database.models import Picture, User, Tag
 from api.schemas import PictureCreate, PictureBase
 
 
-async def create_picture(body: PictureCreate, file_path: str, db: Session):
+async def create_picture(request: Request, description: str, tags: List, file_path: str, db: Session):
 
-    tags_list = transformation_list_to_tag(body.tags, db)
-    picture = Picture(picture_url=file_path, description=body.description, tags=tags_list)
+    tags_list = transformation_list_to_tag(tags, db)
+    picture = Picture(picture_url=file_path, description=description, tags=tags_list)
     db.add(picture)
     db.commit()
     db.refresh(picture)

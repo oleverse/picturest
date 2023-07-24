@@ -1,5 +1,6 @@
+from typing import List
 from faker import Faker
-from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException,Form, Request
 from sqlalchemy.orm import Session
 import cloudinary
 import cloudinary.uploader
@@ -19,12 +20,13 @@ router = APIRouter(prefix='/pictures', tags=["pictures"])
 
 
 @router.post("/", response_model=PictureResponse, status_code=status.HTTP_201_CREATED)
-async def create_picture(body: PictureCreate, file: str, db: Session = Depends(get_db)):
-    # file: UploadFile = File(None)
+async def create_picture(request: Request, description: str = Form(None), tags: List = Form(None),
+                         file: UploadFile = File(None), db: Session = Depends(get_db)):
+    # user
     public_id = Faker().first_name().lower()
-    # r = CloudImage.upload(file.file, public_id)
-    # picture_url = CloudImage.get_url_for_picture(public_id, r)
-    return await repository_pictures.create_picture(body, public_id, db)
+    r = CloudImage.upload(file.file, public_id)
+    picture_url = CloudImage.get_url_for_picture(public_id, r)
+    return await repository_pictures.create_picture(request, description, tags, picture_url, db)
 
 
 @router.get("/{picture_id}", response_model=PictureResponse)
