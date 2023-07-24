@@ -1,10 +1,12 @@
 from datetime import datetime
 
+import uvicorn as uvicorn
 from fastapi import FastAPI, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from api.database.models import Comment, Picture, User
-from api.routes import pictures
+from api.routes import pictures, comments
+
 from sqlalchemy import text
 from api.database.db import get_db
 
@@ -29,3 +31,7 @@ def healthchecker(db: Session = Depends(get_db)):
 @app.get("/")
 async def root():
     return {"message": "Welcome!"}
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000)
