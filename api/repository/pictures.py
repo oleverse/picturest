@@ -74,3 +74,7 @@ async def update_picture(picture_id: int, body: PictureCreate, db: Session):
         db.commit()
         db.refresh(picture)
     return picture
+
+
+async def get_picture_by_tag(tag_name: str, db: Session) -> List[Picture]:
+    return db.query(Picture).join(Picture.tags).filter(Tag.name == tag_name).all()
