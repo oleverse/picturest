@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Column, Integer, String, func, ForeignKey, Boolean,Table
+from sqlalchemy import Column, Integer, String, func, ForeignKey, Boolean, Table
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql.sqltypes import DateTime
 
@@ -40,6 +40,7 @@ class Role(Base):
     can_post_not_own_comment = Column(Boolean, default=False)
     can_mod_not_own_comment = Column(Boolean, default=False)
     can_del_not_own_comment = Column(Boolean, default=False)
+
 
 #    base_role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
 
@@ -117,3 +118,5 @@ class Comment(Base):
     user_id = Column(Integer, ForeignKey(User.id))
     user = relationship('User', backref="comments")
     picture = relationship('Picture', backref="comments")
+    edited = Column(Boolean, default=False)  # Поле, яке вказує, чи був коментар редагований
+    edited_at = Column(DateTime, nullable=True)  # Поле, яке зберігає час останньої редагування коментаря

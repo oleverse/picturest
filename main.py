@@ -1,9 +1,12 @@
+from datetime import datetime
+
 from fastapi import FastAPI, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
+
+from api.database.models import Comment, Picture, User
 from api.routes import pictures
 from sqlalchemy import text
 from api.database.db import get_db
-
 
 app = FastAPI()
 
