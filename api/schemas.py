@@ -9,10 +9,11 @@ class TagModel(BaseModel):
 
 class TagResponse(TagModel):
     id: int
+
     # user_id: Optional[int]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PictureBase(BaseModel):
@@ -38,4 +39,22 @@ class PictureResponse(PictureBase):
     tags: Optional[List[TagResponse]]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+# Додав схеми для коментарів
+class CommentBase(BaseModel):
+    text: str
+
+
+class CommentCreate(CommentBase):
+    pass
+
+
+class CommentResponse(CommentBase):
+    id: int
+    created_at: datetime
+    edited: Optional[bool] = False
+    edited_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True

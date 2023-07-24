@@ -1,6 +1,6 @@
 from typing import List
 from faker import Faker
-from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException,Form, Request
+from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException, Form, Request
 from sqlalchemy.orm import Session
 import cloudinary
 import cloudinary.uploader
@@ -13,8 +13,6 @@ from api.services.cloud_picture import CloudImage
 from api.database.db import get_db
 from api.database.models import User
 from api.repository import pictures as repository_pictures
-
-
 
 router = APIRouter(prefix='/pictures', tags=["pictures"])
 
