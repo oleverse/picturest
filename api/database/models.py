@@ -42,15 +42,6 @@ class Role(Base):
     can_del_not_own_comment = Column(Boolean, default=False)
 
 
-#    base_role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
-
-
-# TODO: 'user' role is the base one, 'moderator' and 'admin' should be based on 'user' but with laveraged privileges
-# @event.listens_for(Role.base_role_id, 'set')
-# def base_role_validation(target, value, oldvalue, initiator):
-#     return value if target.id != value else None
-
-
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
