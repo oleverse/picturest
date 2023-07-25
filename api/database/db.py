@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from api.conf.config import settings
-
+from api.database.models import Base
 
 engine = create_engine(settings.sqlalchemy_database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -18,3 +18,6 @@ def get_db():
 
 class NotUniqueException(Exception):
     pass
+
+
+Base.metadata.create_all(bind=engine)

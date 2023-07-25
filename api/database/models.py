@@ -111,3 +111,5 @@ class Comment(Base):
     picture = relationship('Picture', backref="comments")
     edited = Column(Boolean, default=False)  # Поле, яке вказує, чи був коментар редагований
     edited_at = Column(DateTime, nullable=True)  # Поле, яке зберігає час останньої редагування коментаря
+
+

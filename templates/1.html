@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ua">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastAPI Головна Сторінка</title>
+    <style>
+        header {
+            text-align: center;
+        }
+        header img {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+    <div class="container">
+        <h1>PhotoShare</h1>
+        <h2>Додати світлину</h2>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <label for="photoTitle">Назва світлини:</label>
+            <input type="text" id="photoTitle" name="photoTitle" required>
+            <br>
+            <label for="photoFile">Виберіть файл:</label>
+            <input type="file" id="photoFile" name="photoFile" accept="image/*" required>
+            <br>
+            <label for="photoDescription">Опис світлини:</label>
+            <textarea id="photoDescription" name="photoDescription" required></textarea>
+            <br>
+            <button type="submit">Завантажити</button>
+            <button type="button">Скасувати</button>
+        </form>
+    </div>
+    </header>
+</body>
+</html>
