@@ -17,7 +17,8 @@ from api.services.cloud_picture import CloudImage
 router = APIRouter(prefix='/picture/transform', tags=['transformation picture'])
 
 
-@router.post('/{base_picture_id}', response_model=URLTransformPictureResponse, status_code=status.HTTP_200_OK)
+@router.post('/{base_picture_id}', response_model=URLTransformPictureResponse, status_code=status.HTTP_200_OK,
+             description="simple_effect = 'grayscale','negative','cartoonify','oil_paint' or 'black_white'")
 async def transformation_for_picture(base_image_id: int, body: TransformPictureModel, db: Session = Depends(get_db)):
     # current_user: User = Depends(auth_service.get_current_user),
     image_url = await repo_transform.get_picture_for_transformation(base_image_id, db)
