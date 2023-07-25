@@ -17,12 +17,18 @@ def healthchecker(db: Session = Depends(get_db)):
         result = db.execute(text("SELECT 1")).fetchone()
         if result is None:
             raise HTTPException(status_code=500, detail="Database is not configured correctly")
-        return {"message": "Welcome to FastAPI!"}
+        return {"message": "Welcome to PictuREST!"}
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Error connecting to the database")
 
 
 @app.get("/")
-async def root():
-    return {"message": "Welcome!"}
+def root():
+    """
+    Default API route (i.e. / ) which does nothing
+
+    :return: Greeting string
+    :rtype: str
+    """
+    return {"message": "Welcome to PictuREST!"}
