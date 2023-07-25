@@ -24,5 +24,11 @@ def healthchecker(db: Session = Depends(get_db)):
 
 
 @app.get("/")
-async def root():
-    return {"message": "Welcome!"}
+def read_root():
+    """
+    Default API route (i.e. / ) which does nothing
+
+    :return: Greeting string
+    :rtype: str
+    """
+    return {"message": "Welcome to PictuREST!"}
