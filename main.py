@@ -1,13 +1,11 @@
-import uvicorn
+
 from fastapi import FastAPI, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
-
-
 from api.routes import pictures
 from sqlalchemy import text
 from api.database.db import get_db
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+
+
 
 
 from fastapi.templating import Jinja2Templates
@@ -37,5 +35,3 @@ async def root():
     return {"Message": "Hello World"}
 
 
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000)
