@@ -30,12 +30,7 @@ def transformation_list_to_tag(tags: list, db: Session) -> List[Tag]:
     list_tags = []
     if tags:
         for tag_name in tags:
-            tag = get_tag_by_name(tag_name, db)
-            if not tag:
-                tag = Tag(name=tag_name)
-                db.add(tag)
-                db.commit()
-                db.refresh(tag)
+            tag = create_tag(tag_name, db)
                 # user,
             list_tags.append(tag)
     return list_tags
