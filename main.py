@@ -1,16 +1,16 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from api.routes import pictures, comments
+from api.routes import pictures, web_route, transformations, comments
 from sqlalchemy import text
 from api.database.db import get_db
-from fastapi.templating import Jinja2Templates
 
 
 app = FastAPI()
 
 app.include_router(pictures.router, prefix='/api')
 app.include_router(comments.router, prefix='/comments')
-templates = Jinja2Templates(directory="templates")
+app.include_router(transformations.router, prefix='/api')
+app.include_router(web_route.router, prefix='/web')
 
 
 @app.get("/api/healthchecker")
@@ -35,5 +35,3 @@ def root():
     :rtype: str
     """
     return {"message": "Welcome to PictuREST!"}
-
-
