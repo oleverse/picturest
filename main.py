@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from api.routes import pictures
+from api.routes import pictures, comments
 from sqlalchemy import text
 from api.database.db import get_db
 from fastapi.templating import Jinja2Templates
@@ -9,6 +9,7 @@ from fastapi.templating import Jinja2Templates
 app = FastAPI()
 
 app.include_router(pictures.router, prefix='/api')
+app.include_router(comments.router, prefix='/comments')
 templates = Jinja2Templates(directory="templates")
 
 
