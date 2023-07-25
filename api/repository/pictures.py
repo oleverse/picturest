@@ -4,10 +4,11 @@ from sqlalchemy.orm import Session
 
 from api.database.models import Picture, User, Tag
 from api.schemas import PictureCreate, PictureBase
+from api.repository.tags import create_tag
 from api.services.cloud_picture import CloudImage
 
 
-async def create_picture(request: Request, description: str, tags: List, file_path: str, db: Session):
+async def create_picture(request: Request, description: str, tags: List[str], file_path: str, db: Session):
     tags_list = []
     if tags:
         tags_list = transformation_list_to_tag(tags[0].split(","), db)
@@ -29,12 +30,7 @@ def transformation_list_to_tag(tags: list, db: Session) -> List[Tag]:
     list_tags = []
     if tags:
         for tag_name in tags:
-            tag = get_tag_by_name(tag_name, db)
-            if not tag:
-                tag = Tag(name=tag_name)
-                db.add(tag)
-                db.commit()
-                db.refresh(tag)
+            tag = create_tag(tag_name, db)
                 # user,
             list_tags.append(tag)
     return list_tags
