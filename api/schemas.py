@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from typing import List, Optional
-from pydantic import BaseModel, Field, EmailStr, validator
+from pydantic import BaseModel, Field, EmailStr, field_validator
 
 
 class TagModel(BaseModel):
@@ -26,7 +26,7 @@ class PictureCreate(BaseModel):
     description: Optional[str]
     tags: Optional[list[str]]
 
-    @validator("tags")
+    @field_validator("tags")
     def validate_tags(cls, val):
         if len(val) > 5:
             raise ValueError("Too many tags. Only 5 tags allowed.")
