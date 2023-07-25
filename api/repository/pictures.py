@@ -5,27 +5,18 @@ from sqlalchemy.orm import Session
 from api.database.models import Picture, User, Tag
 from api.schemas import PictureCreate, PictureBase
 from api.repository.tags import create_tag
+from api.services.cloud_picture import CloudImage
+
 
 async def create_picture(request: Request, description: str, tags: List[str], file_path: str, db: Session):
-    picture = Picture(picture_url=file_path, description=description)
-
+    tags_list = []
+    if tags:
+        tags_list = transformation_list_to_tag(tags[0].split(","), db)
+    picture = Picture(picture_url=file_path, description=description, tags=tags_list)
     db.add(picture)
     db.commit()
-    print(tags)
-    tags = tags[0].split(',')
-    try:
-        # Now add the tags one by one
-        for tag_name in tags:
-            print(tag_name)
-            tag = await create_tag(db, tag_name)
-            picture.tags.append(tag)
-
-        db.commit()
-    except SQLAlchemyError as e:
-        db.rollback()
-        print(f"Error: {e}")
-
     db.refresh(picture)
+    # , user_id = user.id
     return picture
 
 
@@ -65,6 +56,8 @@ async def remove_picture(picture_id: int, db: Session):
 
     picture = db.query(Picture).filter(Picture.id == picture_id).first()
     if picture:
+        public_id = picture.picture_url.split("/")[-1]
+        CloudImage.destroy(public_id)
         db.delete(picture)
         db.commit()
     return picture
@@ -82,3 +75,7 @@ async def update_picture(picture_id: int, body: PictureCreate, db: Session):
         db.commit()
         db.refresh(picture)
     return picture
+
+
+async def get_picture_by_tag(tag_name: str, db: Session) -> List[Picture]:
+    return db.query(Picture).join(Picture.tags).filter(Tag.name == tag_name).all()

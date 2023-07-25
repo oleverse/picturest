@@ -1,6 +1,6 @@
 from typing import List
 from faker import Faker
-from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException,Form, Request
+from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException, Form, Request
 from sqlalchemy.orm import Session
 import cloudinary
 import cloudinary.uploader
@@ -13,8 +13,6 @@ from api.services.cloud_picture import CloudImage
 from api.database.db import get_db
 from api.database.models import User, Tag
 from api.repository import pictures as repository_pictures
-
-
 
 router = APIRouter(prefix='/pictures', tags=["pictures"])
 
@@ -52,3 +50,13 @@ async def remove_picture(picture_id: int, db: Session = Depends(get_db)):
     if picture is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
     return picture
+
+
+@router.get("/by_tag/{tag_name}", response_model=List[PictureResponse])
+async def get_pictures_by_tag(tag_name: str, db: Session = Depends(get_db)
+                                 ):
+    # current_user: User = Depends(auth_service.get_current_user)
+    pictures = await repository_pictures.get_picture_by_tag(tag_name, db)
+    if not pictures:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Picture with tag {tag_name} not found")
+    return pictures
