@@ -11,7 +11,7 @@ from api.schemas import PictureBase, PictureResponse, PictureCreate
 from api.services.cloud_picture import CloudImage
 
 from api.database.db import get_db
-from api.database.models import User
+from api.database.models import User, Tag
 from api.repository import pictures as repository_pictures
 
 
@@ -26,6 +26,7 @@ async def create_picture(request: Request, description: str = Form(None), tags: 
     public_id = Faker().first_name().lower()
     r = CloudImage.upload(file.file, public_id)
     picture_url = CloudImage.get_url_for_picture(public_id, r)
+
     return await repository_pictures.create_picture(request, description, tags, picture_url, db)
 
 

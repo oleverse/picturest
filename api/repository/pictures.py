@@ -7,10 +7,24 @@ from api.schemas import PictureCreate, PictureBase
 from api.repository.tags import create_tag
 
 async def create_picture(request: Request, description: str, tags: List[str], file_path: str, db: Session):
-    tags_list = [await create_tag(db, tag_name) for tag_name in tags]
-    picture = Picture(picture_url=file_path, description=description, tags=tags_list)
+    picture = Picture(picture_url=file_path, description=description)
+
     db.add(picture)
     db.commit()
+    print(tags)
+    tags = tags[0].split(',')
+    try:
+        # Now add the tags one by one
+        for tag_name in tags:
+            print(tag_name)
+            tag = await create_tag(db, tag_name)
+            picture.tags.append(tag)
+
+        db.commit()
+    except SQLAlchemyError as e:
+        db.rollback()
+        print(f"Error: {e}")
+
     db.refresh(picture)
     return picture
 
