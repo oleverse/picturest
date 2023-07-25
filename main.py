@@ -1,14 +1,10 @@
-
-from fastapi import FastAPI, Depends, HTTPException, Request, status
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from api.routes import pictures
 from sqlalchemy import text
 from api.database.db import get_db
-
-
-
-
 from fastapi.templating import Jinja2Templates
+
 
 app = FastAPI()
 
@@ -23,15 +19,20 @@ def healthchecker(db: Session = Depends(get_db)):
         result = db.execute(text("SELECT 1")).fetchone()
         if result is None:
             raise HTTPException(status_code=500, detail="Database is not configured correctly")
-        return {"message": "Welcome to FastAPI!"}
+        return {"message": "Welcome to PictuREST!"}
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Error connecting to the database")
 
 
-# Головна сторінка
 @app.get("/")
-async def root():
-    return {"Message": "Hello World"}
+def root():
+    """
+    Default API route (i.e. / ) which does nothing
+
+    :return: Greeting string
+    :rtype: str
+    """
+    return {"message": "Welcome to PictuREST!"}
 
 
