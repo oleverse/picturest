@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
-from api.routes import pictures, web_route
+from api.routes import pictures, web_route, transformations
 from sqlalchemy import text
 from api.database.db import get_db
 
@@ -8,7 +8,9 @@ from api.database.db import get_db
 app = FastAPI()
 
 app.include_router(pictures.router, prefix='/api')
+app.include_router(transformations.router, prefix='/api')
 app.include_router(web_route.router, prefix='/web')
+
 
 @app.get("/api/healthchecker")
 def healthchecker(db: Session = Depends(get_db)):
