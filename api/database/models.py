@@ -1,8 +1,8 @@
 import enum
-
-from sqlalchemy import Column, Integer, String, func, ForeignKey, Boolean,Table
+from sqlalchemy import Column, Integer, String, func, ForeignKey, Boolean, Table
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql.sqltypes import DateTime
+
 
 Base = declarative_base()
 
@@ -40,14 +40,6 @@ class Role(Base):
     can_post_not_own_comment = Column(Boolean, default=False)
     can_mod_not_own_comment = Column(Boolean, default=False)
     can_del_not_own_comment = Column(Boolean, default=False)
-
-#    base_role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
-
-
-# TODO: 'user' role is the base one, 'moderator' and 'admin' should be based on 'user' but with laveraged privileges
-# @event.listens_for(Role.base_role_id, 'set')
-# def base_role_validation(target, value, oldvalue, initiator):
-#     return value if target.id != value else None
 
 
 class User(Base):
@@ -117,3 +109,13 @@ class Comment(Base):
     user_id = Column(Integer, ForeignKey(User.id))
     user = relationship('User', backref="comments")
     picture = relationship('Picture', backref="comments")
+    edited = Column(Boolean, default=False)  # Поле, яке вказує, чи був коментар редагований
+    edited_at = Column(DateTime, nullable=True)  # Поле, яке зберігає час останньої редагування коментаря
+
+
+#class BlacklistToken(Base):
+#    __tablename__ = 'blacklist_tokens'
+    
+#    id = Column(Integer, primary_key=True)
+#    token = Column(String(500), unique=True, nullable=False)
+#    blacklisted_on = Column(DateTime, default=func.now())
