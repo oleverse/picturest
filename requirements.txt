@@ -55,3 +55,7 @@ cloudinary~=1.33.0
 Faker~=19.2.0
 pydantic~=2.0.3
 alembic~=1.11.1
+passlib~=1.7.4
+jose~=1.0.0
+python-slugify~=8.0.1
+pytest~=7.4.0
