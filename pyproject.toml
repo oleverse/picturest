@@ -16,6 +16,12 @@ pydantic = "^2.0.3"
 pydantic-settings = "^2.0.2"
 cloudinary = "^1.33.0"
 faker = "^19.2.0"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+libgravatar = "^1.0.4"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+fastapi-mail = "^1.4.1"
+python-multipart = "^0.0.6"
+slugify = "^0.0.1"
 
 
 [build-system]
