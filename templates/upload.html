@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Завантажити світлину</title>
+    <title>PictuREST - Завантажити світлину</title>
     <!-- Підключення Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- ... -->
@@ -11,22 +11,18 @@
 <body>
     <div class="container">
         <h2 class="mt-4">Завантажити світлину</h2>
-        <form action="/upload" method="post" enctype="multipart/form-data" class="mt-4">
+        <form action="/add-picture" method="post" enctype="multipart/form-data" class="mt-4">
             <div class="mb-3">
-                <label for="photoTitle" class="form-label">Назва світлини:</label>
-                <input type="text" id="photoTitle" name="photoTitle" required class="form-control">
+                <label for="file" class="form-label">Виберіть файл:</label>
+                <input type="file" id="file" name="file" accept="image/*" required class="form-control">
             </div>
             <div class="mb-3">
-                <label for="photoFile" class="form-label">Виберіть файл:</label>
-                <input type="file" id="photoFile" name="photoFile" accept="image/*" required class="form-control">
+                <label for="description" class="form-label">Опис світлини:</label>
+                <textarea id="description" name="description" required class="form-control"></textarea>
             </div>
             <div class="mb-3">
-                <label for="photoDescription" class="form-label">Опис світлини:</label>
-                <textarea id="photoDescription" name="photoDescription" required class="form-control"></textarea>
-            </div>
-            <div class="mb-3">
-                <label for="photoTags" class="form-label">Теги (розділяйте комою):</label>
-                <input type="text" id="photoTags" name="photoTags" class="form-control">
+                <label for="tags" class="form-label">Теги (розділяйте комою):</label>
+                <input type="text" id="tags" name="tags" class="form-control">
             </div>
             <button type="submit" class="btn btn-primary">Завантажити світлину</button>
         </form>
