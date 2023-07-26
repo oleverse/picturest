@@ -24,6 +24,7 @@ python-multipart = "^0.0.6"
 pytest = "^7.4.0"
 httpx = "^0.24.1"
 python-slugify = "^8.0.1"
+qrcode = "^7.4.2"
 
 
 [tool.poetry.group.dev.dependencies]

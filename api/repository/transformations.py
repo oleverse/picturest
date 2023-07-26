@@ -35,22 +35,30 @@ async def set_transform_picture(picture_id: int, modify_url: str, db: Session) -
         db.refresh(image)
     return image
 
+async def get_transform_picture(picture_id: int, db: Session) -> TransformedPicture | None:
+    # current_user: User,
+    # TODO roles - If the user is an admin, then it will return all transformations the picture with the id
+    """
+    The get_transform_picture function is used to retrieve a single picture from the database.
+        The function takes in a picture_id, current_user and db as parameters.
+        If the user is an admin, then it will return any transformations of any pictures.
+        Otherwise, it will  return only transformations if picture was created by the current user.
 
+    :param picture_id: int: Get the picture id from the database
+    :param current_user: User: Check if the user is an admin or not
+    :param db: Session: Access the database
+    :return: A picture from the database
+    """
 
-    # if picture:
-    #     transformation = []
-    #
-    #     if body.rotate.use_filter and body.rotate.width and body.rotate.degree:
-    #         trans_list = [{'width': f"{body.rotate.width}", 'crop': "scale"}, {'angle': "vflip"},
-    #                       {'angle': f"{body.rotate.degree}"}]
-    #         [transformation.append(elem) for elem in trans_list]
-    #
-    #     if transformation:
-    #         url = CloudImage.get_transformed_url(picture.picture_url,transformation)
-    #         picture.transform_url = url
-    #         db.commit()
-    #
-    #     return picture
+    pict = db.query(TransformedPicture).filter(TransformedPicture.id == picture_id).first()
+    print(pict, 'rewt')
+    # join(Picture).
+    # if current_user.user_role == UserRole...:
+    #     img = db.query(TransformedPicture).filter(TransformedPicture.id == picture_id).first()
+    # else:
+    # Post.user_id == current_user.id)).first()
+
+    return pict
 
 
 

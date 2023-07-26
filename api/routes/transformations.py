@@ -2,24 +2,27 @@ from typing import List
 from fastapi import HTTPException, status, APIRouter, Depends
 from sqlalchemy.orm import Session
 
-import api.repository.transformations as repo_transform
-
 from api.database.db import get_db
 from api.database.models import User
+
+from api.services.auth import auth_service
+from api.services.cloud_picture import CloudImage
+from api.services.transformation_picture import create_list_transformation
+
 from api.schemas import PictureResponse
 from api.schemas_transformation import TransformPictureModel, URLTransformPictureResponse, SaveTransformPictureModel, \
     TransformPictureResponse
 
-# from api.services.auth import auth_service
-from api.services.transformatioon_picture import create_list_transformation
-from api.services.cloud_picture import CloudImage
+import api.repository.transformations as repo_transform
 
 router = APIRouter(prefix='/picture/transform', tags=['transformation picture'])
 
 
 @router.post('/{base_picture_id}', response_model=URLTransformPictureResponse, status_code=status.HTTP_200_OK,
              description="simple_effect = 'grayscale','negative','cartoonify','oil_paint' or 'black_white'")
-async def transformation_for_picture(base_image_id: int, body: TransformPictureModel, db: Session = Depends(get_db)):
+async def transformation_for_picture(base_image_id: int, body: TransformPictureModel,
+
+                                     db: Session = Depends(get_db)):
     # current_user: User = Depends(auth_service.get_current_user),
     image_url = await repo_transform.get_picture_for_transformation(base_image_id, db)
     # current_user,
@@ -32,13 +35,24 @@ async def transformation_for_picture(base_image_id: int, body: TransformPictureM
     return {'url': url}
 
 
-# @router.post('/save/{base_picture_id}', response_model=TransformPictureResponse, status_code=status.HTTP_201_CREATED)
-# async def save_transform_image(base_picture_id: int, body: SaveTransformPictureModel,
-#                                db: Session = Depends(get_db)):
-#     # current_user: User = Depends(auth_service.get_current_user),
-#
-#     img = await repo_transform.set_transform_picture(base_picture_id, body.url, db)
-#     if img is None:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND, detail="NOT_FOUND")
-#     return img
+@router.get('/qrcode/{transform_picture_id}', status_code=status.HTTP_200_OK)
+async def get_qrcode_for_transform_image(transform_picture_id: int, db: Session = Depends(get_db)):
+    # current_user: User = Depends(auth_service.get_current_user)
+    """
+    The get_qrcode_for_transform_image function is used to generate a QR code for the transformed picture.
+    The function takes the id of the transform picture (type: integer) and returns a string containing
+    the base64 encoded QR code.
+
+    :param transform_picture_id: int: Find the url for picture which was transformed from the DB
+    :param current_user: User: Check authentication data of the current user
+    :param db: Session: Access the database
+    :return: A base64 encoded qr code
+    """
+    picture = await repo_transform.get_transform_picture(transform_picture_id, db)
+    if picture is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
+    print(picture.url, picture.picture_id, 'rout_trans_qr')
+    qr_code = CloudImage.get_qrcode(picture.url)
+    return qr_code
+# current_user,
