@@ -6,6 +6,7 @@ import cloudinary
 import cloudinary.uploader
 
 from api.conf.config import settings
+from api.repository.comment_service import get_comments_by_picture_id
 from api.schemas import PictureBase, PictureResponse, PictureCreate
 
 from api.services.cloud_picture import CloudImage
@@ -28,10 +29,17 @@ async def create_picture(request: Request, description: str = Form(None), tags: 
 
 
 @router.get("/{picture_id}", response_model=PictureResponse)
-async def get_picture(picture_id: int, db: Session = Depends(get_db)):
+async def get_picture(picture_id: int, with_comments: bool = True, db: Session = Depends(get_db)):
     picture = await repository_pictures.get_picture(picture_id, db)
     if picture is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
+
+    if with_comments:
+        picture_with_comments = picture.dict()
+        comments = get_comments_by_picture_id(db, picture_id)
+        picture_with_comments["comments"] = comments
+        return picture_with_comments
+
     return picture
 
 
@@ -52,8 +60,7 @@ async def remove_picture(picture_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/by_tag/{tag_name}", response_model=List[PictureResponse])
-async def get_pictures_by_tag(tag_name: str, db: Session = Depends(get_db)
-                                 ):
+async def get_pictures_by_tag(tag_name: str, db: Session = Depends(get_db)):
     # current_user: User = Depends(auth_service.get_current_user)
     pictures = await repository_pictures.get_picture_by_tag(tag_name, db)
     if not pictures:
