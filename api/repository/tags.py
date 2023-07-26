@@ -1,8 +1,7 @@
-from typing import List
-
 from sqlalchemy.orm import Session
-from sqlalchemy import exc
-from api.database.models import Tag, User, RoleNames
+
+from api.database.models import Tag
+
 
 async def create_tag(tag_name: str, db: Session):
     existing_tag = db.query(Tag).filter(Tag.name == tag_name).first()
@@ -14,5 +13,3 @@ async def create_tag(tag_name: str, db: Session):
         return new_tag
     else:
         return existing_tag
-
-
