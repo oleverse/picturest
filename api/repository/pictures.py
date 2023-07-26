@@ -1,15 +1,15 @@
-from typing import List
-from fastapi import Request
+from typing import List, Type
+
 from sqlalchemy.orm import Session
 
-from api.database.models import Picture, User, Tag
-from api.schemas import PictureCreate, PictureBase
-from api.repository.tags import create_tag
-from api.services.cloud_picture import CloudImage
 from api.conf.config import settings
+from api.database.models import Picture, Tag
+from api.repository.tags import create_tag
+from api.schemas import PictureCreate
+from api.services.cloud_picture import CloudImage
 
 
-async def create_picture(request: Request, description: str, tags: List[str], file_path: str, db: Session):
+async def create_picture(description: str, tags: List[str], file_path: str, db: Session):
     # If the number of tags is greater than the maximum, return an error message
     if len(tags) > settings.max_tags:
         return f"Error: Too many tags. The maximum is {settings.max_tags}."
@@ -37,7 +37,7 @@ async def transformation_list_to_tag(tags: list, db: Session) -> List[Tag]:
     if tags:
         for tag_name in tags:
             tag = await create_tag(tag_name, db)
-                # user,
+            # user,
             list_tags.append(tag)
     return list_tags
 
@@ -47,12 +47,8 @@ async def get_picture(picture_id: int, db: Session) -> Picture | None:
     return picture
 
 
-async def get_user_pictures(user_id: int, db: Session) -> List[Picture]:
-
-    # TODO: if auth is ready add filter by user id
-    # pictures = db.query(Picture).filter(Picture.user_id == user_id).all()
-
-    pictures = db.query(Picture).all()
+async def get_user_pictures(user_id: int, db: Session) -> list[Type[Picture]]:
+    pictures = db.query(Picture).filter(Picture.user_id == user_id).all()
     return pictures
 
 
@@ -81,5 +77,5 @@ async def update_picture(picture_id: int, body: PictureCreate, db: Session):
     return picture
 
 
-async def get_picture_by_tag(tag_name: str, db: Session) -> List[Picture]:
+async def get_picture_by_tag(tag_name: str, db: Session) -> list[Type[Picture]]:
     return db.query(Picture).join(Picture.tags).filter(Tag.name == tag_name).all()

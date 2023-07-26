@@ -1,6 +1,8 @@
+from typing import Type
+
 from libgravatar import Gravatar
-from sqlalchemy.orm import Session
 from slugify import slugify
+from sqlalchemy.orm import Session
 
 from api.database.models import User
 from api.schemas import UserModel
@@ -21,8 +23,8 @@ async def create_user(body: UserModel, db: Session):
         print(e)
     new_user = User(**body.dict(), avatar=avatar)
     new_user.slug = slugify(body.username)
-    #if len(db.query(User).all()) == 0: uve
-    #    new_user.role_id = RoleNames.admin
+    # if len(db.query(User).all()) == 0: uve
+    #     new_user.role_id = RoleNames.admin
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -42,7 +44,7 @@ async def confirmed_email(email: str, db: Session) -> None:
     db.commit()
 
 
-async def update_avatar(email, url: str, db: Session) -> User:
+async def update_avatar(email, url: str, db: Session) -> Type[User] | None:
     
     user = await get_user_by_email(email, db)
     user.avatar = url
