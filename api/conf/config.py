@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     cloudinary_api_key: str
     cloudinary_api_secret: str
 
+    max_tags: int = 5
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
