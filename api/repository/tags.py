@@ -1,3 +1,5 @@
+from typing import Type
+
 from sqlalchemy.orm import Session
 
 from api.database.models import Tag
@@ -15,8 +17,9 @@ async def create_tag(tag_name: str, db: Session):
         return existing_tag
 
 
-async def get_all_tags(db: Session) -> List[Tag]:
+async def get_all_tags(db: Session) -> list[Type[Tag]]:
     return db.query(Tag).all()
 
-async def get_tag(tag_id: int, db: Session) -> Tag:
+
+async def get_tag(tag_id: int, db: Session) -> Type[Tag] | None:
     return db.query(Tag).filter(Tag.id == tag_id).first()
