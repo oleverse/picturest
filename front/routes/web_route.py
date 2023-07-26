@@ -1,8 +1,9 @@
 from fastapi.templating import Jinja2Templates
 from fastapi import Request, APIRouter, Form, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
+
 # TODO: замінити безпосереднє звернення до бази даних на виклик API функції для отримання світлин
-from api.database.db import SessionLocal
+from api.database.db import get_db
 from api.repository.pictures import get_user_pictures
 from api.repository.comment_service import create_comment
 from api.schemas import CommentCreate
@@ -16,7 +17,7 @@ router = APIRouter(tags=["web"])
 @router.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     # TODO: замінити безпосереднє звернення до бази даних на виклик API функції для отримання світлин
-    pictures = await get_user_pictures(user_id=1, db=SessionLocal())
+    pictures = await get_user_pictures(user_id=1, db=get_db())
     return templates.TemplateResponse("index.html", {
         "request": request,
         "photos": pictures
@@ -41,7 +42,7 @@ async def upload_page(request: Request):
 @router.post("/add_comment/", response_class=HTMLResponse)
 async def add_comment(request: Request, comment_text: str = Form(), user_id: int = Form(), picture_id: int = Form()):
     comment = create_comment(comment_data=CommentCreate(text=comment_text),
-                             user_id=user_id, picture_id=picture_id, db=SessionLocal())
+                             user_id=user_id, picture_id=picture_id, db=get_db())
     if not comment:
         raise HTTPException(status_code=404, detail="Picture not found")
 

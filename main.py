@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from api.routes import pictures, web_route, transformations, comments, auth, tags
+from api.routes import pictures, transformations, comments, auth, tags
+from front.routes import web_route
 from sqlalchemy import text
 from api.database.db import get_db
 
