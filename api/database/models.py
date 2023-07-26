@@ -1,8 +1,8 @@
 import enum
-
 from sqlalchemy import Column, Integer, String, func, ForeignKey, Boolean, Table
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql.sqltypes import DateTime
+
 
 Base = declarative_base()
 
@@ -111,3 +111,11 @@ class Comment(Base):
     picture = relationship('Picture', backref="comments")
     edited = Column(Boolean, default=False)  # Поле, яке вказує, чи був коментар редагований
     edited_at = Column(DateTime, nullable=True)  # Поле, яке зберігає час останньої редагування коментаря
+
+
+#class BlacklistToken(Base):
+#    __tablename__ = 'blacklist_tokens'
+    
+#    id = Column(Integer, primary_key=True)
+#    token = Column(String(500), unique=True, nullable=False)
+#    blacklisted_on = Column(DateTime, default=func.now())
