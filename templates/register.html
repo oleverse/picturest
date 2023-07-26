@@ -16,10 +16,14 @@
 <body>
     <div class="container">
         <!-- Форма для реєстрації -->
-        <form action="/register" method="post" class="mt-4">
+        <form action="/auth/register" method="post" class="mt-4">
             <div class="mb-3">
                 <label for="username" class="form-label">Ім'я користувача:</label>
                 <input type="text" id="username" name="username" required class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" id="email" name="email" required class="form-control">
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Пароль:</label>

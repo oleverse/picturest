@@ -7,16 +7,9 @@ def create_list_transformation(body: TransformPictureModel) -> List[dict]:
 
     transform_list = []
 
-    # if body.resize:
-    #     transform_item = {}
-    #     t_dict = body.resize.model_dump()
-    #     for key in t_dict:
-    #         if t_dict[key]:
-    #             if type(t_dict[key]) not in (int, str):
-    #                 transform_item[key] = t_dict[key].name
-    #             else:
-    #                 transform_item[key] = t_dict[key]
-    #     transform_list.append(transform_item)
+    if body.resize:
+        t_dict = body.resize.model_dump()
+        transform_list.append(t_dict)
 
     if body.rotate:
         transform_list.append({'angle': body.rotate.degree})
@@ -30,4 +23,12 @@ def create_list_transformation(body: TransformPictureModel) -> List[dict]:
             transform_list.append({'radius': f'{body.radius.left_top}:{body.radius.right_top}:'
                                              f'{body.radius.right_bottom}:{body.radius.left_bottom}'})
 
+    if body.simple_effect:
+        for item in body.simple_effect:
+            transform_list.append(({'effect': f'{item.effect.name}:{item.strength}'}))
+
+
+
+
+    print(transform_list, "serv_trfsform_list")
     return transform_list

@@ -54,3 +54,39 @@ class CommentResponse(CommentBase):
     created_at: datetime
     edited: Optional[bool] = False
     edited_at: Optional[datetime]
+
+
+class UserModel(BaseModel):
+
+    username: str
+    email: EmailStr
+    password: str = Field(min_length=0, max_length=14)
+    #slug: str
+
+
+class UserDb(BaseModel):
+
+    id: int
+    username: str
+    email: EmailStr
+    created_at: datetime
+    avatar: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+class UserResponse(BaseModel):
+
+    user: UserDb
+    detail: str = 'User successfully created'
+
+
+class TokenModel(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = 'bearer'
+
+
+class RequestEmail(BaseModel):
+    email: EmailStr

@@ -1,3 +1,5 @@
+from typing import Type
+
 from sqlalchemy.orm import Session
 from api.database.models import Comment
 from api.schemas import CommentCreate
@@ -44,3 +46,7 @@ def delete_comment(db: Session, comment_id: int):
         db.commit()
         return comment
     return None
+
+
+def get_comments_by_picture_id(db: Session, picture_id: int) -> list[Type[Comment]]:
+    return db.query(Comment).filter(Comment.picture_id == picture_id).all()
