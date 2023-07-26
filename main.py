@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from api.routes import pictures
+from api.routes import tags
 from sqlalchemy import text
 from api.database.db import get_db
 
@@ -8,6 +9,7 @@ from api.database.db import get_db
 app = FastAPI()
 
 app.include_router(pictures.router, prefix='/api')
+app.include_router(tags.tags_router)
 
 
 @app.get("/api/healthchecker")

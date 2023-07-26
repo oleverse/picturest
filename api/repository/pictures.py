@@ -6,7 +6,15 @@ from api.database.models import Picture, User, Tag
 from api.schemas import PictureCreate, PictureBase
 from api.repository.tags import create_tag
 
+from api.conf.config import settings
+
 async def create_picture(request: Request, description: str, tags: List[str], file_path: str, db: Session):
+
+
+    # If the number of tags is greater than the maximum, return an error message
+    if len(tags) > settings.max_tags:
+        return f"Error: Too many tags. The maximum is {settings.max_tags}."
+
     picture = Picture(picture_url=file_path, description=description)
 
     db.add(picture)

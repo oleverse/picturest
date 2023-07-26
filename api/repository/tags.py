@@ -16,3 +16,8 @@ async def create_tag(db: Session, tag_name: str):
         return existing_tag
 
 
+async def get_all_tags(db: Session) -> List[Tag]:
+    return db.query(Tag).all()
+
+async def get_tag(tag_id: int, db: Session) -> Tag:
+    return db.query(Tag).filter(Tag.id == tag_id).first()
