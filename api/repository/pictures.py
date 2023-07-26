@@ -6,13 +6,18 @@ from api.database.models import Picture, User, Tag
 from api.schemas import PictureCreate, PictureBase
 from api.repository.tags import create_tag
 from api.services.cloud_picture import CloudImage
+from api.conf.config import settings
 
 
 async def create_picture(request: Request, description: str, tags: List[str], file_path: str, db: Session):
+    # If the number of tags is greater than the maximum, return an error message
+    if len(tags) > settings.max_tags:
+        return f"Error: Too many tags. The maximum is {settings.max_tags}."
+
     tags_list = []
     if tags:
         tags_list = await transformation_list_to_tag(tags[0].split(","), db)
-    print(*(file_path, description, tags_list))
+
     picture = Picture(picture_url=file_path, description=description, tags=tags_list)
     db.add(picture)
     db.commit()
