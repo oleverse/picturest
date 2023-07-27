@@ -20,23 +20,20 @@ router = APIRouter(prefix='/pictures', tags=["pictures"])
 
 
 @router.post("/", response_model=PictureResponse, status_code=status.HTTP_201_CREATED)
-async def create_picture(
-    request: Request,
-    description: str = Form(None),
-    tags: List[str] = Form(max_length=settings.max_tags),
-    file: UploadFile = File(None), db: Session = Depends(get_db),
-    #current_user: User = Depends(auth_service.get_current_user)
-):
-    if len(tags[0].split(',')) > settings.max_tags:
+async def create_picture(request: Request, description: str = Form(None), tags: List = Form(None),
+                         file: UploadFile = File(None), db: Session = Depends(get_db),
+                         current_user: User = Depends(auth_service.get_current_user)):
+    # let's transform our tags from Form into a list of strings    
+    tags = tags[0].strip().split(',')
+
+    if len(tags) > settings.max_tags:
         raise HTTPException(status_code=400, detail=f"Too many tags. The maximum is {settings.max_tags}.")
 
     public_id = Faker().first_name().lower()
     r = CloudImage.upload(file.file, public_id)
     picture_url = CloudImage.get_url_for_picture(public_id, r)
 
-    return await repository_pictures.create_picture(request, description, tags, picture_url, db
-                                                    #,current_user
-                                                    )
+    return await repository_pictures.create_picture(request, description, tags, picture_url, db, current_user)
 
 
 @router.get("/{picture_id}", response_model=PictureResponse, name="==Find  Picture by id ====")

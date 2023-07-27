@@ -11,12 +11,15 @@ from api.services.cloud_picture import CloudImage
 
 async def create_picture(description: str, tags: List[str], file_path: str, db: Session, user: User):
     tags_list = []
+
     if tags:
         tags_list = await transformation_list_to_tag(tags, db)
+
     picture = Picture(picture_url=file_path, description=description, tags=tags_list, user_id=user.id)
     db.add(picture)
     db.commit()
     db.refresh(picture)
+
     return picture
 
 
