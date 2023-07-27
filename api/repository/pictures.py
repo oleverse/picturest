@@ -10,13 +10,10 @@ from api.services.cloud_picture import CloudImage
 
 
 async def create_picture(description: str, tags: List[str], file_path: str, db: Session, user: User):
-    # If the number of tags is greater than the maximum, return an error message
-    if len(tags) > settings.max_tags:
-        return f"Error: Too many tags. The maximum is {settings.max_tags}."
-
     tags_list = []
+
     if tags:
-        tags_list = await transformation_list_to_tag(tags[0].split(","), db)
+        tags_list = await transformation_list_to_tag(tags, db)
 
     picture = Picture(picture_url=file_path, description=description, tags=tags_list, user_id=user.id)
     db.add(picture)

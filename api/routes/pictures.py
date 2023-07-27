@@ -14,6 +14,7 @@ from api.schemas import PictureBase, PictureResponse, PictureCreate
 from api.services.auth import auth_service
 from api.services.cloud_picture import CloudImage
 
+from api.conf.config import settings
 
 router = APIRouter(prefix='/pictures', tags=["pictures"])
 
@@ -22,6 +23,12 @@ router = APIRouter(prefix='/pictures', tags=["pictures"])
 async def create_picture(request: Request, description: str = Form(None), tags: List = Form(None),
                          file: UploadFile = File(None), db: Session = Depends(get_db),
                          current_user: User = Depends(auth_service.get_current_user)):
+    # let's transform our tags from Form into a list of strings    
+    tags = tags[0].strip().split(',')
+
+    if len(tags) > settings.max_tags:
+        raise HTTPException(status_code=400, detail=f"Too many tags. The maximum is {settings.max_tags}.")
+
     public_id = Faker().first_name().lower()
     r = CloudImage.upload(file.file, public_id)
     picture_url = CloudImage.get_url_for_picture(public_id, r)
