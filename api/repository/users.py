@@ -1,8 +1,9 @@
 from datetime import datetime
+from typing import Type
 
 from libgravatar import Gravatar
-from sqlalchemy.orm import Session
 from slugify import slugify
+from sqlalchemy.orm import Session
 
 from api.database.models import User, BlacklistToken, RoleNames
 from api.schemas import UserModel
@@ -23,8 +24,7 @@ async def create_user(body: UserModel, db: Session):
         print(e)
     new_user = User(**body.dict(), avatar=avatar)
     new_user.slug = slugify(body.username)
-    #if len(db.query(User).all()) == 0:
-    #    new_user.role_id = RoleNames.admin
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -44,7 +44,7 @@ async def confirmed_email(email: str, db: Session) -> None:
     db.commit()
 
 
-async def update_avatar(email, url: str, db: Session) -> User:
+async def update_avatar(email, url: str, db: Session) -> Type[User] | None:
     
     user = await get_user_by_email(email, db)
     user.avatar = url
@@ -68,7 +68,7 @@ async def add_to_blacklist(token: str, db: Session) -> None:
     
     
 async def find_blacklisted_token(token: str, db: Session) -> None:
-   
+
     blacklist_token = db.query(BlacklistToken).filter(BlacklistToken.token == token).first()
     return blacklist_token
     
