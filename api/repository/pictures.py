@@ -9,13 +9,11 @@ from api.schemas import PictureCreate
 from api.services.cloud_picture import CloudImage
 
 
-async def create_picture(request, description, tags, picture_url, db: Session):
-
-    print(tags)
-    tags_list = tags[0].split(',')
+async def create_picture(description: str, tags: List[str], file_path: str, db: Session, user: User):
+    tags_list = []
     if tags:
-        tags_list = await transformation_list_to_tag(tags_list, db)
-    picture = Picture(picture_url=picture_url, description=description, tags=tags_list)
+        tags_list = await transformation_list_to_tag(tags, db)
+    picture = Picture(picture_url=file_path, description=description, tags=tags_list, user_id=user.id)
     db.add(picture)
     db.commit()
     db.refresh(picture)
