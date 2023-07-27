@@ -8,19 +8,19 @@ from sqlalchemy.orm import Session
 # TODO: замінити безпосереднє звернення до бази даних на виклик API функції для отримання світлин
 from api.database.db import get_db
 from api.repository.comment_service import create_comment
-from api.repository.pictures import get_user_pictures
+from api.repository.pictures import get_picture
 from api.schemas import CommentCreate
+
+router = APIRouter(tags=["web"])
 
 template_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=template_dir)
 
-router = APIRouter(tags=["web"])
 
-
-@router.get("/", response_class=HTMLResponse)
+@router.get("/index", response_class=HTMLResponse)
 async def read_root(request: Request, db: Session = Depends(get_db)):
     # TODO: замінити безпосереднє звернення до бази даних на виклик API функції для отримання світлин
-    pictures = await get_user_pictures(user_id=1, db=db)
+    pictures = await get_picture(picture_id=int, db=db)
     return templates.TemplateResponse("index.html", {
         "request": request,
         "photos": pictures
