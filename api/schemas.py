@@ -62,7 +62,7 @@ class UserModel(BaseModel):
     username: str
     email: EmailStr
     password: str = Field(min_length=0, max_length=14)
-    #slug: str
+
 
 
 class UserDb(BaseModel):

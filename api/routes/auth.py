@@ -8,6 +8,7 @@ from api.schemas import UserModel, UserResponse, TokenModel, RequestEmail
 from api.repository import users as repository_users
 from api.services.auth import auth_service
 from api.services.email import send_email
+from api.database.models import User
 
 
 router = APIRouter(prefix='/auth', tags=['auth'])
@@ -80,3 +81,13 @@ async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, r
         background_tasks.add_task(send_email, user.email, user.username, request.base_url)
     return {'message': 'Check your email for confirmation.'}
 
+
+@router.post("/logout")
+async def logout(credentials: HTTPAuthorizationCredentials = Security(security),
+                 db: Session = Depends(get_db),
+            current_user: User = Depends(auth_service.get_current_user)):
+
+    token = credentials.credentials
+
+    await repository_users.add_to_blacklist(token, db)
+    return {"message": 'LOGOUT'}

@@ -1,10 +1,11 @@
+from datetime import datetime
 from typing import Type
 
 from libgravatar import Gravatar
 from slugify import slugify
 from sqlalchemy.orm import Session
 
-from api.database.models import User
+from api.database.models import User, BlacklistToken, RoleNames
 from api.schemas import UserModel
 
 
@@ -23,8 +24,7 @@ async def create_user(body: UserModel, db: Session):
         print(e)
     new_user = User(**body.dict(), avatar=avatar)
     new_user.slug = slugify(body.username)
-    # if len(db.query(User).all()) == 0: uve
-    #     new_user.role_id = RoleNames.admin
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -50,3 +50,30 @@ async def update_avatar(email, url: str, db: Session) -> Type[User] | None:
     user.avatar = url
     db.commit()
     return user
+
+
+async def ban_user(email: str, db: Session) -> None:
+
+    user = await get_user_by_email(email, db)
+    user.is_active = False
+    db.commit()
+
+
+async def add_to_blacklist(token: str, db: Session) -> None:
+    
+    blacklist_token = BlacklistToken(token=token, blacklisted_on=datetime.now())
+    db.add(blacklist_token)
+    db.commit()
+    db.refresh(blacklist_token)
+    
+    
+async def find_blacklisted_token(token: str, db: Session) -> None:
+
+    blacklist_token = db.query(BlacklistToken).filter(BlacklistToken.token == token).first()
+    return blacklist_token
+    
+    
+async def remove_from_blacklist(token: str, db: Session) -> None:
+   
+    blacklist_token = db.query(BlacklistToken).filter(BlacklistToken.token == token).first()
+    db.delete(blacklist_token)
