@@ -9,8 +9,6 @@ from api.database.db import get_db
 app = FastAPI()
 
 app.include_router(web_route.router)
-
-
 app.include_router(pictures.router, prefix='/api')
 app.include_router(tags.tags_router, prefix='/api')
 app.include_router(auth.router, prefix='/api')
