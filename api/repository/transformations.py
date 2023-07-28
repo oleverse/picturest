@@ -1,11 +1,6 @@
-import cloudinary
-import io
-
 from sqlalchemy.orm import Session
 
-from api.database.models import Picture, User, TransformedPicture
-from api.services.cloud_picture import CloudImage
-from api.schemas_transformation import TransformPictureModel
+from api.database.models import Picture, TransformedPicture
 
 
 async def get_picture_for_transformation(pict_id: int, db: Session) -> str | None:
@@ -34,6 +29,7 @@ async def set_transform_picture(picture_id: int, modify_url: str, db: Session) -
         db.commit()
         db.refresh(image)
     return image
+
 
 async def get_transform_picture(picture_id: int, db: Session) -> TransformedPicture | None:
     # current_user: User,

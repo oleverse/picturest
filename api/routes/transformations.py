@@ -1,17 +1,12 @@
-from typing import List
 from fastapi import HTTPException, status, APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from api.database.db import get_db
-from api.database.models import User
 
-from api.services.auth import auth_service
 from api.services.cloud_picture import CloudImage
 from api.services.transformation_picture import create_list_transformation
 
-from api.schemas import PictureResponse
-from api.schemas_transformation import TransformPictureModel, URLTransformPictureResponse, SaveTransformPictureModel, \
-    TransformPictureResponse
+from api.schemas.transformation import TransformPictureModel, URLTransformPictureResponse
 
 import api.repository.transformations as repo_transform
 

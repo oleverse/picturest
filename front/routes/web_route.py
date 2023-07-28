@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from api.database.db import get_db
 from api.repository.comment_service import create_comment
 from api.repository.pictures import get_user_pictures
-from api.schemas import CommentCreate
+from api.schemas.essential import CommentCreate
 
 template_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=template_dir)
