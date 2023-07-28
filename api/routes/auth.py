@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Security, BackgroundTasks, Request
 from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
-
+from fastapi.responses import RedirectResponse
 
 from api.database.db import get_db
 from api.schemas import UserModel, UserResponse, TokenModel, RequestEmail
@@ -36,10 +36,18 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depen
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Email not confirmed')
     if not auth_service.verify_password(body.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='incorrect data')
+
     access_token = await auth_service.create_access_token(data={'sub': user.email})
     refresh_token = await auth_service.create_refresh_token(data={'sub': user.email})
     await repository_users.update_token(user, refresh_token, db)
-    return {'access_token': access_token, 'refresh_token': refresh_token, 'token_type': 'bearer'}
+    # Перенаправлення користувача на головну сторінку
+    response = RedirectResponse(url='/')
+
+    # токени до відповіді як додаткові заголовки
+    response.headers['access_token'] = access_token
+    response.headers['refresh_token'] = refresh_token
+    response.headers['token_type'] = 'bearer'
+    return response
 
 
 @router.get('/refresh_token', response_model=TokenModel)
