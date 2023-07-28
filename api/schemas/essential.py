@@ -1,28 +1,30 @@
 from datetime import datetime, date
 from typing import List, Optional
 from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict
-from conf.config import settings
+from api.conf.config import settings
 
 
 class TagModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     name: str = Field(max_length=100)
 
 
 class TagResponse(TagModel):
-    model_config = ConfigDict(from_attributes=True)
-
     id: int
 
 
 class PictureBase(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     picture_url: str
-    description: Optional[str]
-    tags: Optional[List[TagModel]]
+    description: Optional[str] = None
+    tags: Optional[List[TagModel]] = []
 
 
 class PictureCreate(BaseModel):
     description: Optional[str]
-    tags: Optional[list[str]]
+    tags: Optional[list[str]] = []
 
     @field_validator("tags")
     def validate_tags(cls, val):
@@ -31,16 +33,10 @@ class PictureCreate(BaseModel):
         return val
 
 
-class PictureResponse(PictureBase):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    created_at: datetime
-    tags: Optional[List[TagResponse]]
-
-
 # Додав схеми для коментарів
 class CommentBase(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     text: str
 
 
@@ -54,7 +50,15 @@ class CommentResponse(CommentBase):
     id: int
     created_at: datetime
     edited: Optional[bool] = False
-    edited_at: Optional[datetime]
+    edited_at: Optional[datetime] = None
+
+
+class PictureResponse(PictureBase):
+    # model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    created_at: datetime
+    comments: Optional[List[CommentResponse]] = []
 
 
 class UserModel(BaseModel):
@@ -64,14 +68,13 @@ class UserModel(BaseModel):
     password: str = Field(min_length=0, max_length=14)
 
 
-
 class UserDb(BaseModel):
 
     id: int
     username: str
     email: EmailStr
     created_at: datetime
-    avatar: Optional[str]
+    avatar: Optional[str] = None
 
     class Config:
         from_attributes = True

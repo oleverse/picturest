@@ -2,7 +2,7 @@ from typing import Type
 
 from sqlalchemy.orm import Session
 from api.database.models import Comment
-from api.schemas import CommentCreate
+from api.schemas.essential import CommentCreate
 from datetime import datetime
 
 

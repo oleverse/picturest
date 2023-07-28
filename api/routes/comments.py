@@ -5,7 +5,7 @@ from api.database.models import Role, User
 from api.repository.comment_service import (
     create_comment, update_comment, delete_comment_by_id, get_comment_by_id
 )
-from api.schemas import CommentCreate, CommentResponse
+from api.schemas.essential import CommentCreate, CommentResponse
 
 from api.services.auth import Auth
 
@@ -67,4 +67,3 @@ async def delete_comment_by_user(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="You don't have permission to delete comments")
     return delete_comment(get_db(), comment_id)
-

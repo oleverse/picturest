@@ -114,8 +114,8 @@ class Comment(Base):
 
 
 class BlacklistToken(Base):
-   __tablename__ = 'blacklist_tokens'
+    __tablename__ = 'blacklist_tokens'
     
-   id = Column(Integer, primary_key=True)
-   token = Column(String(500), unique=True, nullable=False)
-   blacklisted_on = Column(DateTime, default=func.now())
+    id = Column(Integer, primary_key=True)
+    token = Column(String(500), unique=True, nullable=False)
+    blacklisted_on = Column(DateTime, default=func.now())
