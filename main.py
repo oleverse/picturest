@@ -16,7 +16,6 @@ app.include_router(transformations.router, prefix='/api')
 app.include_router(comments.router, prefix='/api')
 
 
-
 @app.get("/api/healthchecker")
 def healthchecker(db: Session = Depends(get_db)):
     try:
