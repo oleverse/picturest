@@ -27,6 +27,7 @@ class TransformCropModel(BaseModel):
     background: str = 'lightblue'
 # gravity="faces", height=800, width=800, crop="thumb"
 
+
 class RotatePictureModel(BaseModel):
     degree: int = Field(ge=-360, le=360, default=0)
 
@@ -38,6 +39,7 @@ class RadiusImageModel(BaseModel):
     right_bottom: int = Field(ge=0, default=0)
     left_bottom: int = Field(ge=0, default=0)
     max: bool = Field(default=False)
+
 
 class SimpleEffectType(str, Enum):
     grayscale = 'grayscale'

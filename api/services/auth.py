@@ -5,6 +5,7 @@ from fastapi import HTTPException, status, Depends
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from api.database.models import BlacklistToken
 from jose import JWTError, jwt
 
 from api.database.db import get_db
@@ -25,6 +26,12 @@ class Auth:
     def get_password_hash(self, password: str):
 
         return self.pwd_context.hash(password)
+
+    async def jwt_check_and_decode(self, token: str, db: Session):
+        blacklisted_token = db.query(BlacklistToken).filter(token == BlacklistToken.token).first()
+        if not blacklisted_token:
+            return jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+        raise JWTError
 
     async def create_access_token(self, data: dict, expires_delta: Optional[float] = None):
 
@@ -66,7 +73,7 @@ class Auth:
                                               headers={'WWW-Authenticate': 'Bearer'})
 
         try:
-            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            payload = await self.jwt_check_and_decode(token, db)
             if payload['scope'] == 'access_token':
                 email = payload['sub']
                 if email is None:
@@ -92,12 +99,13 @@ class Auth:
     async def get_email_from_token(self, token: str):
 
         try:
-            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            payload = await self.jwt_check_and_decode(token, next(get_db()))
             email = payload['sub']
             return email
         except JWTError as e:
             print(e)
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail='Invalid token for email verification')
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                detail='Invalid token for email verification')
 
 
 auth_service = Auth()

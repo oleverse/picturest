@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from api.database.db import get_db
 from api.repository import tags as repository_tags
-from api.schemas import TagModel
+from api.schemas.essential import TagModel
 
 tags_router = APIRouter(prefix='/tags', tags=["tags"])
 

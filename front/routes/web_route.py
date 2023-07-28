@@ -11,13 +11,12 @@ from api.database.db import get_db
 from api.database.models import User
 from api.repository.comment_service import create_comment
 from api.routes.pictures import get_picture
-from api.schemas import CommentCreate
+from api.repository.pictures import get_user_pictures
+from api.schemas.essential import CommentCreate
 from api.repository.web_service import get_current_user
 
-router = APIRouter(
-    #prefix='/web',
-    tags=["web"])
 
+router = APIRouter(tags=["web"])
 
 template_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=template_dir)
