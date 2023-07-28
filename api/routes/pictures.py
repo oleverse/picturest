@@ -1,6 +1,6 @@
 from typing import List
 from faker import Faker
-from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException, Form, Request
+from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException, Form, Request, Query
 from sqlalchemy.orm import Session
 
 from api.database.db import get_db
@@ -56,9 +56,20 @@ async def get_picture(picture_id: int, with_comments: bool = True, db: Session =
     return picture
 
 
+@router.get("/user_pictures/", response_model=List[PictureResponse])
+async def get_user_pictures(limit: int = Query(10, le=100), offset: int = 0,
+                            current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):
+
+    pictures = await repository_pictures.get_user_pictures(limit, offset, current_user.id, db)
+    if pictures is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f'For {current_user.username} picture not found')
+    return pictures
+
+
 @router.put("/{picture_id}", response_model=PictureResponse)
-async def update_photo(body: PictureCreate, picture_id: int, db: Session = Depends(get_db),
-                       current_user: User = Depends(auth_service.get_current_user)):
+async def update_picture(body: PictureCreate, picture_id: int, db: Session = Depends(get_db),
+                         current_user: User = Depends(auth_service.get_current_user)):
     picture = await repository_pictures.update_picture(picture_id, body, current_user, db)
     if picture is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
@@ -77,7 +88,6 @@ async def remove_picture(picture_id: int, db: Session = Depends(get_db),
 @router.get("/by_tag/{tag_name}", response_model=List[PictureResponse])
 async def get_pictures_by_tag(tag_name: str, db: Session = Depends(get_db),
                               current_user: User = Depends(auth_service.get_current_user)):
-
     pictures = await repository_pictures.get_picture_by_tag(tag_name, db)
     if not pictures:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Picture with tag {tag_name} not found")
