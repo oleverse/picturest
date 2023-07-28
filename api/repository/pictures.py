@@ -74,6 +74,7 @@ async def update_picture(picture_id: int, body: PictureCreate, user: User, db: S
             tags_list = await transformation_list_to_tag(body.tags, db)
             picture.description = body.description
             picture.tags = tags_list
+            picture.update = True
             db.commit()
             db.refresh(picture)
     return picture

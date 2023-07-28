@@ -28,7 +28,7 @@ class PictureCreate(BaseModel):
 
     @field_validator("tags")
     def validate_tags(cls, val):
-        if len(val) > settings.max_tags:
+        if val and len(val) > settings.max_tags:
             raise ValueError(f"Too many tags. Only {settings.max_tags} tags allowed.")
         return val
 
