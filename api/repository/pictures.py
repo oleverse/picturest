@@ -42,9 +42,10 @@ async def get_picture(picture_id: int, user: User, db: Session) -> Picture | Non
     return picture
 
 
-async def get_user_pictures(user_id: int, db: Session) -> list[Type[Picture]]:
-    pictures = db.query(Picture).filter(Picture.user_id == user_id).all()
+async def get_user_pictures(limit: int, offset: int, user: int, db: Session) -> list[Type[Picture]]:
+    pictures = db.query(Picture).filter(Picture.user_id == user).limit(limit).offset(offset).all()
     return pictures
+
 
 
 async def remove_picture(picture_id: int, user: User, db: Session):
@@ -82,3 +83,4 @@ async def update_picture(picture_id: int, body: PictureCreate, user: User, db: S
 
 async def get_picture_by_tag(tag_name: str, db: Session) -> list[Type[Picture]]:
     return db.query(Picture).join(Picture.tags).filter(Tag.name == tag_name).all()
+
