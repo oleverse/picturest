@@ -1,5 +1,6 @@
 import enum
 from sqlalchemy import Column, Integer, String, func, ForeignKey, Boolean, Table
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql.sqltypes import DateTime
 
@@ -64,6 +65,7 @@ picture_m2m_tag = Table(
     Column("id", Integer, primary_key=True),
     Column("picture_id", Integer, ForeignKey("pictures.id", ondelete="CASCADE")),
     Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE")),
+    UniqueConstraint('picture_id', 'tag_id', name='uix_1')
 )
 
 

@@ -21,6 +21,21 @@ router = APIRouter(prefix='/picture/transform', tags=['transformation picture'])
 async def transformation_for_picture(base_image_id: int, body: TransformPictureModel,
                                      current_user: User = Depends(auth_service.get_current_user),
                                      db: Session = Depends(get_db)):
+    """
+    The transformation_for_picture function is used to create transformation of picture.
+    It takes in the base_image_id, body and current user as parameters.
+    Otherwise, a list of transformations are created using create list transformation function which takes in body as
+    parameter.
+    Then url is set to transformed url using CloudImage class's get transformed url method which takes in image url
+    and transformation list as parameters
+
+    :param base_image_id: int: Get the picture from the database
+    :param body: TransformPictureModel: Get the parameters from the request body
+    :param current_user: User: Get the current user
+    :param db: Session: Access the database
+    :return: The url of the transformed picture
+    """
+
     image_url = await repo_transform.get_picture_for_transformation(base_image_id, current_user, db)
 
     if image_url is None:
