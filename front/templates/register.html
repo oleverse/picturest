@@ -11,7 +11,7 @@
 <body>
     <div class="container">
         <!-- Форма для реєстрації -->
-        <form action="/auth/signup" method="post" class="mt-4">
+        <form action="/register" method="post" class="mt-4">
             <div class="mb-3">
                 <label for="username" class="form-label">Ім'я користувача:</label>
                 <input type="text" id="username" name="username" required class="form-control">
@@ -24,16 +24,12 @@
                 <label for="password" class="form-label">Пароль:</label>
                 <input type="password" id="password" name="password" required class="form-control">
             </div>
-            <div class="mb-3">
-                <label for="confirmPassword" class="form-label">Підтвердіть пароль:</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" required class="form-control">
-            </div>
             <button type="submit" class="btn btn-primary">Зареєструватися</button>
         </form>
 
-        <!-- Посилання на головну сторінку -->
-        <button class="btn btn-primary" id="backBtn">Повернутися на головну сторінку</button>
-
+        <form action="/" method="get" class="mt-4">
+            <button class="btn btn-primary">Повернутися на головну сторінку</button>
+        </form>
     </div>
 
 </body>
