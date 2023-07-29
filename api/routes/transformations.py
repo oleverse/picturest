@@ -44,7 +44,7 @@ async def transformation_for_picture(base_image_id: int, body: TransformPictureM
     transform_list = create_list_transformation(body)
     url = CloudImage.get_transformed_url(image_url, transform_list)
     img = await repo_transform.set_transform_picture(base_image_id, url, current_user, db)
-    return {'url': url}
+    return {'url': url, 'id': img.id}
 
 
 @router.get('/qrcode/{transform_picture_id}', status_code=status.HTTP_200_OK)

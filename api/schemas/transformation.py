@@ -63,6 +63,8 @@ class TransformPictureModel(BaseModel):
 
 class URLTransformPictureResponse(BaseModel):
     url: str = ''
+    id: int
+
 
 
 class SaveTransformPictureModel(BaseModel):
