@@ -84,6 +84,7 @@ class Picture(Base):
     picture_url = Column(String(1024))
     description = Column(String(10000))
     user_id = Column('user_id', Integer, ForeignKey('users.id', ondelete="CASCADE"))
+    shared = Column(Boolean, default=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     update = Column(Boolean, default=False)
