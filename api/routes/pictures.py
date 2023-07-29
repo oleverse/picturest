@@ -21,7 +21,7 @@ router = APIRouter(prefix='/pictures', tags=["pictures"])
 
 @router.post("/", response_model=PictureResponse, status_code=status.HTTP_201_CREATED)
 async def create_picture(description: str = Form(None), tags: List = Form(None),
-                         file: UploadFile = File(None), db: Session = Depends(get_db),
+                         file: UploadFile = File(None), shared: bool = True, db: Session = Depends(get_db),
                          current_user: User = Depends(auth_service.get_current_user)):
     # let's transform our tags from Form into a list of strings    
     tags = tags[0].strip().split(',') if tags[0] else []
@@ -36,7 +36,7 @@ async def create_picture(description: str = Form(None), tags: List = Form(None),
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(v_err))
     else:
         picture_url = CloudImage.get_url_for_picture(public_id, r)
-        return await repository_pictures.create_picture(description, tags, picture_url, db, current_user)
+        return await repository_pictures.create_picture(description, tags, picture_url, shared, db, current_user)
 
 
 @router.get("/{picture_id}", response_model=PictureResponse)
@@ -54,6 +54,16 @@ async def get_picture(picture_id: int, with_comments: bool = True, db: Session =
         return picture_with_comments
 
     return picture
+
+
+@router.get("/pictures/", response_model=List[PictureResponse])
+async def get_all_pictures(limit: int = Query(10, le=100), offset: int = 0, db: Session = Depends(get_db)):
+
+    pictures = await repository_pictures.get_all_pictures(limit, offset, db)
+    if pictures is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='Picture not found')
+    return pictures
 
 
 @router.get("/user_pictures/", response_model=List[PictureResponse])
