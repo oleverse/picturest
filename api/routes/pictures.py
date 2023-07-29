@@ -9,7 +9,7 @@ from api.database.models import User
 from api.repository import pictures as repository_pictures
 from api.repository.comment_service import get_comments_by_picture_id
 
-from api.schemas.essential import PictureResponse, PictureCreate
+from api.schemas.essential import PictureResponse, PictureCreate, PictureResponseWithComments
 
 from api.services.auth import auth_service
 from api.services.cloud_picture import CloudImage
@@ -24,7 +24,7 @@ async def create_picture(description: str = Form(None), tags: List = Form(None),
                          file: UploadFile = File(None), shared: bool = True, db: Session = Depends(get_db),
                          current_user: User = Depends(auth_service.get_current_user)):
     # let's transform our tags from Form into a list of strings    
-    tags = tags[0].strip().split(',') if tags[0] else []
+    tags = tags[0].strip().split(',') if tags and tags[0] else []
 
     if len(tags) > settings.max_tags:
         raise HTTPException(status_code=400, detail=f"Too many tags. The maximum is {settings.max_tags}.")
@@ -39,7 +39,7 @@ async def create_picture(description: str = Form(None), tags: List = Form(None),
         return await repository_pictures.create_picture(description, tags, picture_url, shared, db, current_user)
 
 
-@router.get("/{picture_id}", response_model=PictureResponse)
+@router.get("/{picture_id}", response_model=PictureResponseWithComments)
 async def get_picture(picture_id: int, with_comments: bool = True, db: Session = Depends(get_db),
                       current_user: User = Depends(auth_service.get_current_user)):
     picture = await repository_pictures.get_picture(picture_id, current_user, db)
@@ -48,9 +48,8 @@ async def get_picture(picture_id: int, with_comments: bool = True, db: Session =
 
     if with_comments:
         picture_with_comments = picture.__dict__
-        comments = get_comments_by_picture_id(db, picture_id)
+        comments = await get_comments_by_picture_id(db, picture_id)
         picture_with_comments["comments"] = comments
-        print(PictureResponse.model_validate(picture_with_comments))
         return picture_with_comments
 
     return picture
@@ -68,7 +67,8 @@ async def get_all_pictures(limit: int = Query(10, le=100), offset: int = 0, db: 
 
 @router.get("/user_pictures/", response_model=List[PictureResponse])
 async def get_user_pictures(limit: int = Query(10, le=100), offset: int = 0,
-                            current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):
+                            current_user: User = Depends(auth_service.get_current_user),
+                            db: Session = Depends(get_db)):
 
     pictures = await repository_pictures.get_user_pictures(limit, offset, current_user.id, db)
     if pictures is None:

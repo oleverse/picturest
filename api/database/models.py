@@ -62,10 +62,9 @@ class User(Base):
 picture_m2m_tag = Table(
     "picture_m2m_tag",
     Base.metadata,
-    Column("id", Integer, primary_key=True),
-    Column("picture_id", Integer, ForeignKey("pictures.id", ondelete="CASCADE")),
-    Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE")),
-    UniqueConstraint('picture_id', 'tag_id', name='uix_1')
+    Column("picture_id", Integer, ForeignKey("pictures.id", ondelete="CASCADE"), nullable=False),
+    Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE"), nullable=False),
+    UniqueConstraint('picture_id', 'tag_id', name='pic_tag_uniq')
 )
 
 
@@ -80,7 +79,7 @@ class Tag(Base):
 
 class Picture(Base):
     __tablename__ = "pictures"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     picture_url = Column(String(1024))
     description = Column(String(10000))
     user_id = Column('user_id', Integer, ForeignKey('users.id', ondelete="CASCADE"))
@@ -96,10 +95,11 @@ class TransformedPicture(Base):
     __tablename__ = 'transformed_pictures'
     id = Column(Integer, primary_key=True)
     url = Column(String, nullable=False)
-    picture_id = Column(Integer, ForeignKey(Picture.id, ondelete="CASCADE"))
+    picture_id = Column(Integer, ForeignKey(Picture.id, ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     picture = relationship('Picture', backref="transformed_pictures")
+    UniqueConstraint('picture_id', 'url', name='pic_trans_url_uniq')
 
 
 class Comment(Base):

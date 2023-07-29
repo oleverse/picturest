@@ -1,7 +1,6 @@
 from typing import List, Type
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_
-
+from sqlalchemy import and_, exc
 from api.database.models import Picture, TransformedPicture, User
 
 
@@ -18,14 +17,20 @@ async def get_picture_for_transformation(pict_id: int, user: User, db: Session) 
 async def set_transform_picture(picture_id: int, modify_url: str, user: User, db: Session) -> TransformedPicture | None:
     # TODO roles
 
-    image = None
     picture = db.query(Picture).filter(and_(Picture.id == picture_id, Picture.user_id == user.id)).first()
     if picture:
         image = TransformedPicture(url=modify_url, picture_id=picture.id)
         db.add(image)
-        db.commit()
-        db.refresh(image)
-    return image
+        try:
+            db.commit()
+        except exc.IntegrityError:
+            db.rollback()
+            image = db.query(TransformedPicture) \
+                .filter(and_(TransformedPicture.picture_id == picture_id,
+                             TransformedPicture.url == modify_url)).first()
+        else:
+            db.refresh(image)
+        return image
 
 
 async def get_transform_picture(picture_id: int, current_user: User, db: Session) -> TransformedPicture | None:
