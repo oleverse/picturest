@@ -1,3 +1,4 @@
+from typing import List, Type
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, exc
 from api.database.models import Picture, TransformedPicture, User
@@ -50,15 +51,32 @@ async def get_transform_picture(picture_id: int, current_user: User, db: Session
     pict = db.query(TransformedPicture).join(Picture).filter(
         and_(TransformedPicture.id == picture_id, Picture.user_id == current_user.id)).first()
 
-    # if current_user.user_role == UserRole...:
-    #     img = db.query(TransformedPicture).filter(TransformedPicture.id == picture_id).first()
-    # else:
-
     return pict
 
 
+async def remove_transformation(transformation_id: int, current_user: User, db: Session) -> TransformedPicture | None:
+    pict = db.query(TransformedPicture).join(Picture).filter(
+        and_(TransformedPicture.id == transformation_id, Picture.user_id == current_user.id)).first()
+    if pict:
+        db.delete(pict)
+        db.commit()
+    return pict
 
 
-
-
+# async def get_all_tr_pict(base_id: int, skip: int, limit: int, user: User, db: Session) -> List[Type[TransformedPicture]]:
+#
+#     """
+#     The get_all_tr_pict function returns a list of all transform pictures for the given picture id.
+#
+#     :param base_id: int: Get the picture id of the picture that was transformed
+#     :param skip: int: Skip the first n number of items in a list
+#     :param limit: int: Limit the number of images returned
+#     :param user: User: current user
+#     :param db: Session: Access the database
+#     :return: A list of all the transformations for the picture
+#     """
+#
+#     list_pict = db.query(TransformedPicture).join(Picture).filter(
+#         and_(Picture.id == base_id, Picture.user_id == user.id)).offset(skip).limit(limit).all()
+#     return list_pict
 

@@ -20,11 +20,13 @@ class PictureBase(BaseModel):
     picture_url: str
     description: Optional[str] = None
     tags: Optional[List[TagModel]] = []
+    shared: Optional[bool] = True
 
 
 class PictureCreate(BaseModel):
     description: Optional[str]
     tags: Optional[list[str]] = []
+    shared: Optional[bool] = True
 
     @field_validator("tags")
     def validate_tags(cls, val):
@@ -55,6 +57,7 @@ class CommentResponse(CommentBase):
 
 class PictureResponse(PictureBase):
     id: int
+    shared: bool
     created_at: datetime
 
 

@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import HTTPException, status, APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -9,7 +10,7 @@ from api.services.auth import auth_service
 from api.services.cloud_picture import CloudImage
 from api.services.transformation_picture import create_list_transformation
 
-from api.schemas.transformation import TransformPictureModel, URLTransformPictureResponse
+from api.schemas.transformation import TransformPictureModel, URLTransformPictureResponse, TransformPictureResponse
 
 import api.repository.transformations as repo_transform
 
@@ -44,6 +45,7 @@ async def transformation_for_picture(base_image_id: int, body: TransformPictureM
     transform_list = create_list_transformation(body)
     url = CloudImage.get_transformed_url(image_url, transform_list)
     img = await repo_transform.set_transform_picture(base_image_id, url, current_user, db)
+
     return {'id': img.id, 'url': url}
 
 
@@ -67,3 +69,38 @@ async def get_qrcode_for_transform_image(transform_picture_id: int,
             status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
     qr_code = CloudImage.get_qrcode(picture.url)
     return qr_code
+
+
+@router.delete('/{transformation_id}', status_code=status.HTTP_204_NO_CONTENT)
+async def remove_transformed_picture(transformation_id: int,
+                                     current_user: User = Depends(auth_service.get_current_user),
+                                     db: Session = Depends(get_db)):
+    """
+    The remove_transformed_picture function is used to remove a transformed image from the database.
+
+    :param transformation_id: int: Identify the transformation that is to be removed
+    :param current_user: User: Get the user that is currently logged in
+    :param db: Session
+    :return: An image object
+    """
+    el = await repo_transform.remove_transformation(transformation_id, current_user, db)
+    if el is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="NOT_FOUND")
+
+
+# @router.get('/all/{base_picture_id}', response_model=List[TransformPictureResponse], status_code=status.HTTP_200_OK)
+# async def get_list_of_transformed_for_picture(base_picture_id: int, skip: int = 0, limit: int = 10,
+#                                               current_user: User = Depends(auth_service.get_current_user),
+#                                               db: Session = Depends(get_db)):
+#     """
+#     The get_list_of_transformed_for_picture function returns a list of transformed pictures for the given base image.
+#
+#     :param base_picture_id: int: Get the base picture id from the database
+#     :param skip: int: Skip the first n images in the list
+#     :param limit: int: Limit the number of results returned
+#     :param current_user: User: Get the current user from the database
+#     :param db: Session
+#     :return: A list of transformed pictures for a given base image
+#     """
+#     return await repo_transform.get_all_tr_pict(base_picture_id, skip, limit, current_user, db)

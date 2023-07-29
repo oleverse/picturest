@@ -11,7 +11,7 @@ from api.services.cloud_picture import CloudImage
 from api.conf.config import settings
 
 
-async def create_picture(description: str, tags: List[str], file_path: str, db: Session, user: User):
+async def create_picture(description: str, tags: List[str], file_path: str, shared: bool, db: Session, user: User):
     """
     The create_picture function creates a new picture in the database.
         Args:
@@ -31,7 +31,7 @@ async def create_picture(description: str, tags: List[str], file_path: str, db: 
     if tags:
         tags_list = await transformation_list_to_tag(tags, db)
 
-    picture = Picture(picture_url=file_path, description=description, tags=tags_list, user_id=user.id)
+    picture = Picture(picture_url=file_path, description=description, tags=tags_list, shared=shared, user_id=user.id)
     db.add(picture)
     db.commit()
     db.refresh(picture)
@@ -45,7 +45,6 @@ def get_tag_by_name(tag_name: str, db: Session) -> Tag | None:
 
 
 async def transformation_list_to_tag(tags: list, db: Session) -> List[Tag]:
-
     list_tags = []
     if tags:
         for tag_name in tags:
@@ -61,6 +60,12 @@ async def get_picture(picture_id: int, user: User, db: Session) -> Picture | Non
 
 async def get_user_pictures(limit: int, offset: int, user: int, db: Session) -> list[Type[Picture]]:
     pictures = db.query(Picture).filter(Picture.user_id == user).limit(limit).offset(offset).all()
+    return pictures
+
+
+async def get_all_pictures(limit: int, offset: int, db: Session) -> list[Type[Picture]]:
+    pictures = db.query(Picture).filter(Picture.shared.is_(True)).limit(limit).offset(offset).all()
+
     return pictures
 
 
@@ -93,9 +98,10 @@ async def update_picture(picture_id: int, body: PictureCreate, user: User, db: S
                 raise HTTPException(status_code=400, detail=f"Too many tags. The maximum is {settings.max_tags}. "
                                                             f"The picture already has {len(picture.tags)} tags")
             picture.tags = await transformation_list_to_tag(tag_names, db)
-
+            
         picture.description = body.description
         picture.update = True
+        picture.shared = body.shared
         db.commit()
         db.refresh(picture)
         return picture
@@ -103,4 +109,3 @@ async def update_picture(picture_id: int, body: PictureCreate, user: User, db: S
 
 async def get_picture_by_tag(tag_name: str, db: Session) -> list[Type[Picture]]:
     return db.query(Picture).join(Picture.tags).filter(Tag.name == tag_name).all()
-
