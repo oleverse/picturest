@@ -17,6 +17,11 @@ async def get_user_by_email(email: str, db: Session):
     return db.query(User).filter(User.email == email).first()
 
 
+async def user_exists(user_id: int, db: Session):
+    user = db.query(User).filter(User.id == user_id).first()
+    return bool(user)
+
+
 async def create_user(body: UserModel, db: Session):
     avatar = None
     try:
@@ -52,14 +57,12 @@ async def update_avatar(email, url: str, db: Session) -> Type[User] | None:
 
 
 async def ban_user(email: str, db: Session) -> None:
-
     user = await get_user_by_email(email, db)
     user.is_active = False
     db.commit()
 
 
 async def add_to_blacklist(token: str, db: Session) -> None:
-    
     blacklist_token = BlacklistToken(token=token, blacklisted_on=datetime.now())
     db.add(blacklist_token)
     db.commit()
@@ -67,12 +70,10 @@ async def add_to_blacklist(token: str, db: Session) -> None:
     
     
 async def find_blacklisted_token(token: str, db: Session) -> None:
-
     blacklist_token = db.query(BlacklistToken).filter(BlacklistToken.token == token).first()
     return blacklist_token
     
     
 async def remove_from_blacklist(token: str, db: Session) -> None:
-   
     blacklist_token = db.query(BlacklistToken).filter(BlacklistToken.token == token).first()
     db.delete(blacklist_token)
