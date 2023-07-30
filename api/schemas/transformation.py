@@ -2,17 +2,16 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class TransformPictureResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     picture_url: str
     picture_id: int
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class ScalePicture(float):
@@ -62,6 +61,7 @@ class TransformPictureModel(BaseModel):
 
 
 class URLTransformPictureResponse(BaseModel):
+    id: int
     url: str = ''
 
 

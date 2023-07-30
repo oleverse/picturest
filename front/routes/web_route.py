@@ -73,6 +73,7 @@ async def add_comment(
 ):
     comment = create_comment(comment_data=CommentCreate(text=comment_text),
                              user_id=user_id, picture_id=picture_id, db=db)
+
     if not comment:
         raise HTTPException(status_code=404, detail="Picture not found")
 
