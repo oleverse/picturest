@@ -28,7 +28,6 @@ def get_tag_by_name(tag_name: str, db: Session) -> Tag | None:
 
 
 async def transformation_list_to_tag(tags: list, db: Session) -> List[Tag]:
-
     list_tags = []
     if tags:
         for tag_name in tags:
@@ -47,8 +46,13 @@ async def get_user_pictures(user_id: int, db: Session) -> list[Type[Picture]]:
     return pictures
 
 
-async def remove_picture(picture_id: int, user: User, db: Session):
+def get_all_pictures(limit: int, offset: int, db: Session) -> list[Type[Picture]]:
+    # Виконуємо запит до бази даних, щоб отримати всі зображення
+    pictures = db.query(Picture).offset(offset).limit(limit).all()
+    return pictures
 
+
+async def remove_picture(picture_id: int, user: User, db: Session):
     picture = db.query(Picture).filter(Picture.id == picture_id).first()
     if picture:
 
@@ -63,7 +67,6 @@ async def remove_picture(picture_id: int, user: User, db: Session):
 
 
 async def update_picture(picture_id: int, body: PictureCreate, user: User, db: Session):
-
     picture = db.query(Picture).filter(Picture.id == picture_id).first()
 
     if picture:

@@ -1,7 +1,9 @@
 from pathlib import Path
+from typing import Optional
 
-from fastapi import Request, APIRouter, Form, HTTPException, Depends
+from fastapi import Request, APIRouter, Form, HTTPException, Depends, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
+
 from fastapi.templating import Jinja2Templates
 from psycopg2 import IntegrityError
 from sqlalchemy.orm import Session
@@ -9,13 +11,14 @@ from starlette import status
 
 # TODO: замінити безпосереднє звернення до бази даних на виклик API функції для отримання світлин
 from api.database.db import get_db
-from api.database.models import User
+from api.database.models import User, Picture, Tag
 from api.repository.comment_service import create_comment
-from api.repository.users import create_user
-from api.routes.pictures import get_picture
-from api.repository.pictures import get_user_pictures
-from api.schemas.essential import CommentCreate, UserModel
-from api.repository.web_service import get_current_user
+
+from api.repository.pictures import get_user_pictures, get_all_pictures
+from api.schemas.essential import CommentCreate
+
+from api.services import auth
+
 from front.routes.web_forms import LoginForm, UserCreateForm
 from api.routes import auth
 
@@ -27,21 +30,23 @@ templates = Jinja2Templates(directory=template_dir)
 
 @router.get("/", response_class=HTMLResponse)
 async def root(request: Request, db: Session = Depends(get_db)):
-    # pictures = await get_picture(picture_id=int, db=db)
+    pictures = get_all_pictures(limit=5, offset=0, db=db)
     return templates.TemplateResponse("index.html", {
         "request": request,
-        # "photos": pictures
-    })
+        "photos": pictures
+        })
 
 
-@router.get("/home")
-async def home_page(request: Request, db: Session = Depends(get_db)):
-    # pictures = await get_picture(picture_id=int, db=db)
-
-    return templates.TemplateResponse("home.html", {
+@router.get("/authorized", response_class=HTMLResponse)
+async def home_page(request: Request, user_id: int = 1, db: Session = Depends(get_db)):
+    pictures = get_all_pictures(limit=5, offset=0, db=db)
+    pictures_user = await get_user_pictures(user_id=user_id, db=db)
+    return templates.TemplateResponse("authorized.html", {
         "request": request,
-        # "photos": pictures
+        "photos_user": pictures_user,
+        "photos": pictures
     })
+
 
 
 @router.get("/register", response_class=HTMLResponse)
@@ -54,12 +59,12 @@ async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 
-@router.get("/upload-picture", response_class=HTMLResponse)
+@router.get("/upload", response_class=HTMLResponse)
 async def upload_page(request: Request):
     return templates.TemplateResponse("upload.html", {"request": request})
 
 
-@router.post("/add_comment/", response_class=HTMLResponse)
+@router.post("/add_comment", response_class=HTMLResponse)
 async def add_comment(
         request: Request,
         comment_text: str = Form(...),
@@ -82,7 +87,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
     if await form.is_valid():
         try:
             form.__dict__.update(msg="Login Successful :)")
-            response = templates.TemplateResponse("home.html", form.__dict__)
+            response = templates.TemplateResponse("index.html", form.__dict__)
             await auth.login(response=response, body=form, db=db)
 
             return response
@@ -91,6 +96,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
             form.__dict__.get("errors").append("Incorrect Email or Password")
             return templates.TemplateResponse("login.html", form.__dict__)
     return templates.TemplateResponse("/index.html", form.__dict__)
+
 
 
 @router.post("/register", response_class=HTMLResponse)
@@ -108,4 +114,19 @@ async def register(request: Request, db: Session = Depends(get_db)):
             form.__dict__.get("errors").append("Duplicate username or email")
             return templates.TemplateResponse("/register.html", form.__dict__)
 
-    return templates.TemplateResponse("/home.html", form.__dict__)
+    return templates.TemplateResponse("/authorized.html", form.__dict__)
+
+
+@router.post("/upload")
+async def upload_photo_view(
+        file: UploadFile = File(...), user_id: int = None,
+        db: Session = Depends(get_db)
+):
+    # Збереження світлини в базу даних
+    picture = Picture(picture_url=file.filename, description="Some description", user_id=1, tags=[])
+    db.add(picture)
+    db.commit()
+    db.refresh(picture)
+
+
+    return RedirectResponse("/authorized?msg=Фото%20завантажено%20успішно!", status_code=status.HTTP_302_FOUND, headers={"Location": f"/authorized?user_id={user_id}"})

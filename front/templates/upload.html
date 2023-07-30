@@ -11,7 +11,7 @@
 <body>
     <div class="container">
         <h2 class="mt-4">Завантажити світлину</h2>
-        <form action="/create_picture" method="post" enctype="multipart/form-data" class="mt-4">
+        <form action="/upload" method="post" enctype="multipart/form-data" class="mt-4">
             <div class="mb-3">
                 <label for="file" class="form-label">Виберіть файл:</label>
                 <input type="file" id="file" name="file" accept="image/*" required class="form-control">
@@ -26,7 +26,9 @@
             </div>
             <button type="submit" class="btn btn-primary">Завантажити світлину</button>
         </form>
-        <a class="btn btn-primary" href="index.html">Повернутися на головну сторінку</a>
+        <form action="/authorized" method="get" class="mt-4">
+            <a class="btn btn-primary" href="/authorized">Повернутися на головну сторінку</a>
+        </form>
 
     </div>
 
