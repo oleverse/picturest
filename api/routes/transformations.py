@@ -14,10 +14,10 @@ from api.schemas.transformation import TransformPictureModel, URLTransformPictur
 
 import api.repository.transformations as repo_transform
 
-router = APIRouter(prefix='/picture/transform', tags=['transformation picture'])
+router = APIRouter(prefix='/picture/transforms', tags=['transformation picture'])
 
 
-@router.post('/{base_picture_id}', response_model=URLTransformPictureResponse, status_code=status.HTTP_200_OK,
+@router.post('/batch', response_model=URLTransformPictureResponse, status_code=status.HTTP_200_OK,
              description="simple_effect = 'grayscale','negative','cartoonify','oil_paint' or 'black_white'")
 async def transformation_for_picture(base_image_id: int, body: TransformPictureModel,
                                      current_user: User = Depends(auth_service.get_current_user),
@@ -47,6 +47,62 @@ async def transformation_for_picture(base_image_id: int, body: TransformPictureM
     img = await repo_transform.set_transform_picture(base_image_id, url, current_user, db)
 
     return {'id': img.id, 'url': url}
+
+
+@router.post('/rotate', response_model=URLTransformPictureResponse, status_code=status.HTTP_200_OK,
+             description="Insert rotating angle for Picture- degree: -360<=int <= 360, default=0")
+async def transformation_rotate(base_image_id: int, body: RotatePictureModel,
+                                current_user: User = Depends(auth_service.get_current_user),
+                                db: Session = Depends(get_db)):
+    """
+    The transformation_rotate function is used to create transformation of rotate for picture.
+    It takes in the base_image_id, body and current user as parameters.
+
+    :param base_image_id: int: Get the picture from the database
+    :param body: RotatePictureModel: Get the parameters from the request body
+    :param current_user: User: Get the current user
+    :param db: Session: Access the database
+    :return: The url of the transformed picture
+    """
+
+    image_url = await repo_transform.get_picture_for_transformation(base_image_id, current_user, db)
+    transform_list = []
+    if image_url is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
+
+    transform_list.append({'angle': body.degree})
+    url = CloudImage.get_transformed_url(image_url, transform_list)
+    img = await repo_transform.set_transform_picture(base_image_id, url, current_user, db)
+    return {'url': url, 'id': img.id}
+
+
+@router.post('/resize', response_model=URLTransformPictureResponse, status_code=status.HTTP_200_OK,
+             description="'for resizing picture insert width, height and, for example, 'gravity': 'face', 'crop': 'crop'")
+async def transformation_resize(base_image_id: int, body: TransformCropModel,
+                                current_user: User = Depends(auth_service.get_current_user),
+                                db: Session = Depends(get_db)):
+    """
+    The transformation_rotate function is used to create transformation of resize for picture.
+    It takes in the base_image_id, body and current user as parameters.
+
+    :param base_image_id: int: Get the picture from the database
+    :param body: TransformCropModel: Get the parameters from the request body
+    :param current_user: User: Get the current user
+    :param db: Session: Access the database
+    :return: The url of the transformed picture
+    """
+
+    image_url = await repo_transform.get_picture_for_transformation(base_image_id, current_user, db)
+    transform_list = []
+    if image_url is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
+    t_dict = body.model_dump()
+    transform_list.append(t_dict)
+    url = CloudImage.get_transformed_url(image_url, transform_list)
+    img = await repo_transform.set_transform_picture(base_image_id, url, current_user, db)
+    return {'url': url, 'id': img.id}
 
 
 @router.get('/qrcode/{transform_picture_id}', status_code=status.HTTP_200_OK)
@@ -89,8 +145,8 @@ async def remove_transformed_picture(transformation_id: int,
             status_code=status.HTTP_404_NOT_FOUND, detail="NOT_FOUND")
 
 
-# @router.get('/all/{base_picture_id}', response_model=List[TransformPictureResponse], status_code=status.HTTP_200_OK)
-# async def get_list_of_transformed_for_picture(base_picture_id: int, skip: int = 0, limit: int = 10,
+# @router.get('/all/{base_picture_id}', response_model=List[TransformPictureResponse])
+# async def get_list_of_transformations_picture(base_picture_id: int, skip: int = 0, limit: int = 10,
 #                                               current_user: User = Depends(auth_service.get_current_user),
 #                                               db: Session = Depends(get_db)):
 #     """
@@ -103,4 +159,5 @@ async def remove_transformed_picture(transformation_id: int,
 #     :param db: Session
 #     :return: A list of transformed pictures for a given base image
 #     """
-#     return await repo_transform.get_all_tr_pict(base_picture_id, skip, limit, current_user, db)
+#     lst = await repo_transform.get_all_tr_pict(base_picture_id, skip, limit, current_user, db)
+#     return lst
