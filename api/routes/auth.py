@@ -17,8 +17,8 @@ security = HTTPBearer()
 
 
 @router.post('/register', response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def register(body: UserModel,
-                   db: Session = Depends(get_db)):  # background_tasks: BackgroundTasks, request: Request
+async def register(body: UserModel, background_tasks: BackgroundTasks, request: Request,
+                   db: Session = Depends(get_db)):
     exist_user = await repository_users.get_user_by_email(body.email, db)
     if exist_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Account already exists')
