@@ -29,7 +29,13 @@ async def create_user(body: UserModel, db: Session):
         avatar = g.get_image()
     except Exception as e:
         print(e)
-    new_user = User(**body.model_dump(), avatar=avatar)
+    new_user = User(
+        username=body.username,
+        email=body.email,
+        password=body.password,
+        avatar=avatar
+    )
+    # new_user = User(**body.model_dump(), avatar=avatar)
     new_user.slug = slugify(body.username)
 
     db.add(new_user)
