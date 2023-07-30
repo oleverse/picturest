@@ -10,7 +10,8 @@ from api.services.auth import auth_service
 from api.services.cloud_picture import CloudImage
 from api.services.transformation_picture import create_list_transformation
 
-from api.schemas.transformation import TransformPictureModel, URLTransformPictureResponse, TransformPictureResponse
+from api.schemas.transformation import TransformPictureModel, URLTransformPictureResponse, RotatePictureModel, \
+    TransformCropModel, TransformPictureResponse
 
 import api.repository.transformations as repo_transform
 
@@ -143,7 +144,6 @@ async def remove_transformed_picture(transformation_id: int,
     if el is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="NOT_FOUND")
-
 
 # @router.get('/all/{base_picture_id}', response_model=List[TransformPictureResponse])
 # async def get_list_of_transformations_picture(base_picture_id: int, skip: int = 0, limit: int = 10,
