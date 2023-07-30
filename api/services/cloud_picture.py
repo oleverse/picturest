@@ -19,7 +19,10 @@ class CloudImage:
 
     @staticmethod
     def upload(file, public_id: str):
-        r = cloudinary.uploader.upload(file, public_id=public_id, overwrite=True)
+        try:
+            r = cloudinary.uploader.upload(file, public_id=public_id, overwrite=True)
+        except cloudinary.exceptions.Error as cl_error:
+            raise ValueError(str(cl_error))
         return r
 
     @staticmethod

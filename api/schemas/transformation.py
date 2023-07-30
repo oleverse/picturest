@@ -2,17 +2,16 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class TransformPictureResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     picture_url: str
     picture_id: int
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class ScalePicture(float):
@@ -27,6 +26,7 @@ class TransformCropModel(BaseModel):
     background: str = 'lightblue'
 # gravity="faces", height=800, width=800, crop="thumb"
 
+
 class RotatePictureModel(BaseModel):
     degree: int = Field(ge=-360, le=360, default=0)
 
@@ -38,6 +38,7 @@ class RadiusImageModel(BaseModel):
     right_bottom: int = Field(ge=0, default=0)
     left_bottom: int = Field(ge=0, default=0)
     max: bool = Field(default=False)
+
 
 class SimpleEffectType(str, Enum):
     grayscale = 'grayscale'
@@ -60,6 +61,7 @@ class TransformPictureModel(BaseModel):
 
 
 class URLTransformPictureResponse(BaseModel):
+    id: int
     url: str = ''
 
 

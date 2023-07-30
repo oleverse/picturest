@@ -56,7 +56,7 @@ def test_login_wrong_password(client, user):
     )
     assert response.status_code == 401, response.text
     data = response.json()
-    assert data["detail"] == "Invalid password"
+    assert data["detail"] == "Incorrect login or password"
 
 
 def test_login_wrong_email(client, user):
@@ -66,4 +66,4 @@ def test_login_wrong_email(client, user):
     )
     assert response.status_code == 401, response.text
     data = response.json()
-    assert data["detail"] == "Invalid email"
+    assert data["detail"] == "Incorrect login or password"

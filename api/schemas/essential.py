@@ -1,8 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-
 from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict
-
 from api.conf.config import settings
 
 
@@ -42,7 +40,7 @@ class CommentBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     text: str
-    
+
 
 class CommentCreate(CommentBase):
     pass
@@ -68,7 +66,6 @@ class PictureResponseWithComments(PictureResponse):
 
 
 class UserModel(BaseModel):
-
     username: str
     email: EmailStr
     password: str = Field(min_length=0, max_length=14)
@@ -85,7 +82,6 @@ class UserDb(BaseModel):
 
 
 class UserResponse(BaseModel):
-
     user: UserDb
     detail: str = 'User successfully created'
 
