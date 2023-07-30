@@ -20,7 +20,7 @@ from api.schemas.essential import CommentCreate
 from api.services import auth
 
 from front.routes.web_forms import LoginForm, UserCreateForm
-from api.routes import auth
+from api.routes import auth, pictures
 
 router = APIRouter(tags=["web"])
 
@@ -34,7 +34,7 @@ async def root(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse("index.html", {
         "request": request,
         "photos": pictures
-        })
+    })
 
 
 @router.get("/authorized", response_class=HTMLResponse)
@@ -46,7 +46,6 @@ async def home_page(request: Request, user_id: int = 1, db: Session = Depends(ge
         "photos_user": pictures_user,
         "photos": pictures
     })
-
 
 
 @router.get("/register", response_class=HTMLResponse)
@@ -81,13 +80,14 @@ async def add_comment(
 
 
 @router.post("/login", response_class=HTMLResponse)
-async def login(request: Request, db: Session = Depends(get_db)):
+async def login(request: Request, user_id: int = 1, db: Session = Depends(get_db)):
     form = LoginForm(request)
     await form.load_data()
     if await form.is_valid():
         try:
             form.__dict__.update(msg="Login Successful :)")
-            response = templates.TemplateResponse("index.html", form.__dict__)
+            response = RedirectResponse("/authorized?msg=Фото%20завантажено%20успішно!", status_code=status.HTTP_302_FOUND,
+                            headers={"Location": f"/authorized?user_id={user_id}"})
             await auth.login(response=response, body=form, db=db)
 
             return response
@@ -96,7 +96,6 @@ async def login(request: Request, db: Session = Depends(get_db)):
             form.__dict__.get("errors").append("Incorrect Email or Password")
             return templates.TemplateResponse("login.html", form.__dict__)
     return templates.TemplateResponse("/index.html", form.__dict__)
-
 
 
 @router.post("/register", response_class=HTMLResponse)
@@ -118,15 +117,15 @@ async def register(request: Request, db: Session = Depends(get_db)):
 
 
 @router.post("/upload")
-async def upload_photo_view(
-        file: UploadFile = File(...), user_id: int = None,
-        db: Session = Depends(get_db)
-):
-    # Збереження світлини в базу даних
-    picture = Picture(picture_url=file.filename, description="Some description", user_id=1, tags=[])
-    db.add(picture)
-    db.commit()
-    db.refresh(picture)
+async def upload_photo_view(request: Request,
+                            file: UploadFile = File(...),
+                            db: Session = Depends(get_db)
+                            ):
 
+    user = await auth.auth_service.get_current_user(token=request.cookies["access_token"][7:], db=db)
 
-    return RedirectResponse("/authorized?msg=Фото%20завантажено%20успішно!", status_code=status.HTTP_302_FOUND, headers={"Location": f"/authorized?user_id={user_id}"})
+    await pictures.create_picture(description="Some description", file=file, tags=['1'], db=db,
+                                            current_user=user)
+
+    return RedirectResponse("/authorized?msg=Фото%20завантажено%20успішно!", status_code=status.HTTP_302_FOUND,
+                            headers={"Location": f"/authorized?user_id={user.id}"})

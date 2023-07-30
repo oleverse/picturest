@@ -61,7 +61,7 @@ class User(Base):
 picture_m2m_tag = Table(
     "picture_m2m_tag",
     Base.metadata,
-    Column("id", Integer, primary_key=True),
+    #Column("id", Integer, primary_key=True),
     Column("picture_id", Integer, ForeignKey("pictures.id", ondelete="CASCADE")),
     Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE")),
 )

@@ -73,7 +73,9 @@ class Auth:
                                               headers={'WWW-Authenticate': 'Bearer'})
 
         try:
+
             payload = await self.jwt_check_and_decode(token, db)
+
             if payload['scope'] == 'access_token':
                 email = payload['sub']
                 if email is None:
@@ -81,6 +83,7 @@ class Auth:
             else:
                 raise credentials_exception
         except JWTError as e:
+            print(e)
             raise credentials_exception
 
         user = await repository_users.get_user_by_email(email, db)

@@ -33,7 +33,12 @@
                 {% for photo in photos_user %}
                 <li class="list-group-item">
                     <img src="{{ photo.picture_url }}" alt="{{ photo.title }}" class="img-thumbnail">
-                    <p>{{ photo.description }}</p>
+                    <p>Коментарі:</p>
+                    <ul>
+                      {% for comment in photo.comments %}
+                        <li>{{ comment.text }}</li>
+                      {% endfor %}
+                    </ul>
                     <p>Теги: {{ photo.tags | map(attribute='name') | join(', ') }}</p>
                     <form action="/add_comment" method="post" class="mb-2">
                         <input type="hidden" name="user_id" value="{{ photo.user_id }}">
@@ -59,7 +64,12 @@
             {% for photo in photos %}
             <li class="list-group-item">
                 <img src="{{ photo.picture_url }}" alt="{{ photo.title }}" class="img-thumbnail">
-                <p>{{ photo.description }}</p>
+                <p>Коментарі:</p>
+                    <ul>
+                      {% for comment in photo.comments %}
+                        <li>{{ comment.text }}</li>
+                      {% endfor %}
+                    </ul>
                 <p>Теги: {{ photo.tags | map(attribute='name') | join(', ') }}</p>
                 <form action="/add_comment" method="post" class="mb-2">
                     <input type="hidden" name="user_id" value="1">
