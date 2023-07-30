@@ -16,14 +16,12 @@
             <h1>PictuREST</h1>
             <p>Ласкаво просимо до нашого фото-сервісу!</p>
             <div class="mt-4">
-                <form action="/logout" method="post" class="mb-2">
-                <a href="/" class="btn btn-primary me-2">Вийти</a>
+                <form action="/logout_user" method="post" class="mb-2">
+            <button type="submit" class="btn btn-primary me-2">Вийти</button>
                 </form>
             </div>
         </div>
     </div>
-
-
         <!-- Тут список світлин користувача -->
        {% if photos_user %}
         <div class="mt-4">
