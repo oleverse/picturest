@@ -17,32 +17,31 @@
             <p>Ласкаво просимо до нашого фото-сервісу!</p>
             <p>Ви можете зареєструватися або увійти, щоб додавати свої світлини та коментарі.</p>
             <div class="mt-4">
-                <a href="/login" class="btn btn-primary me-2">Увійти</a>
-                <a href="/register" class="btn btn-secondary">Зареєструватися</a>
+                    <a href="/login" class="btn btn-primary me-2">Увійти</a>
+                    <a href="/register" class="btn btn-secondary">Зареєструватися</a>
             </div>
         </div>
     </div>
 
-    <!-- Виведення списку світлин -->
-    <div class="mt-4 ">
-    <h2>Список світлин</h2>
-    <ul class="list-group image-list">
-        <!-- Тут список світлин, використовуючи шаблонізатор Jinja -->
-        {% for photo in photos %}
-        <li class="list-group-item">
-            <img src="{{ photo.picture_url }}" alt="{{ photo.title }}" class="img-thumbnail">
-            <p>{{ photo.description }}</p>
-            <p>Теги: {{ photo.tags | map(attribute='name') | join(', ') }}</p>
-            <form action="/add_comment" method="post" class="mb-2">
 
-                <input type="hidden" name="user_id" value="1">
-                <input type="hidden" name="picture_id" value="{{ photo.id }}">
-                <input type="text" name="comment_text" placeholder="Ваш коментар" required>
-                <button type="submit" class="btn btn-sm btn-secondary">Додати коментар</button>
-            </form>
-        </li>
-        {% endfor %}
-    </ul>
-</div>
+    <!-- Виведення списку світлин -->
+    <div class="mt-4">
+        <h2>Список світлин</h2>
+        <ul class="list-group image-list">
+            <!-- Тут список світлин, використовуючи шаблонізатор Jinja -->
+            {% for photo in photos %}
+            <li class="list-group-item">
+                <img src="{{ photo.picture_url }}" alt="{{ photo.title }}" class="img-thumbnail">
+                <p>Коментарі:</p>
+                    <ul>
+                      {% for comment in photo.comments %}
+                        <li>{{ comment.text }}</li>
+                      {% endfor %}
+                    </ul>
+                <p>Теги: {{ photo.tags | map(attribute='name') | join(', ') }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
 </body>
 </html>
