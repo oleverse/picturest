@@ -1,7 +1,9 @@
 from datetime import datetime, date
 from typing import List, Optional
+
 from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict
-from conf.config import settings
+
+from api.conf.config import settings
 
 
 class TagModel(BaseModel):
@@ -64,17 +66,14 @@ class UserModel(BaseModel):
     password: str = Field(min_length=0, max_length=14)
 
 
-
 class UserDb(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     username: str
     email: EmailStr
     created_at: datetime
     avatar: Optional[str]
-
-    class Config:
-        from_attributes = True
 
 
 class UserResponse(BaseModel):
@@ -91,3 +90,16 @@ class TokenModel(BaseModel):
 
 class RequestEmail(BaseModel):
     email: EmailStr
+
+
+class RatingBase(BaseModel):
+    rate: int
+
+
+class RatingModel(RatingBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    created_at: datetime
+    post_id: int
+    user_id: int

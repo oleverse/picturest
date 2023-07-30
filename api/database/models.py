@@ -1,7 +1,8 @@
 import enum
-from sqlalchemy import Column, Integer, String, func, ForeignKey, Boolean, Table
+from sqlalchemy import Column, Integer, String, func, ForeignKey, Boolean, Table, Numeric
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql.sqltypes import DateTime
+from sqlalchemy_utils import aggregated
 
 
 Base = declarative_base()
@@ -88,6 +89,12 @@ class Picture(Base):
     tags = relationship("Tag", secondary=picture_m2m_tag, backref="pictures")
     user = relationship("User", backref="pictures")
 
+    @aggregated('rating', Column(Numeric))
+    def avg_rating(self):
+           return func.avg(Rating.rate)
+    
+    rating = relationship('Rating')
+   
 
 class TransformedPicture(Base):
     __tablename__ = 'transformed_pictures'
@@ -119,3 +126,15 @@ class BlacklistToken(Base):
    id = Column(Integer, primary_key=True)
    token = Column(String(500), unique=True, nullable=False)
    blacklisted_on = Column(DateTime, default=func.now())
+
+
+class Rating(Base):
+    __tablename__ = 'rating'
+    
+    id = Column(Integer, primary_key=True)
+    picture_id = Column('picture_id', ForeignKey(Picture.id, ondelete='CASCADE'), nullable=False)
+    rate = Column(Integer, default=0)
+    user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
+    created_at = Column(DateTime, default=func.now())
+
+    user = relationship('User', backref="rating")
