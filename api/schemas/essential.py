@@ -94,3 +94,16 @@ class TokenModel(BaseModel):
 
 class RequestEmail(BaseModel):
     email: EmailStr
+
+
+class RatingBase(BaseModel):
+    rate: int
+
+
+class RatingModel(RatingBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    created_at: datetime
+    post_id: int
+    user_id: int

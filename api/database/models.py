@@ -1,8 +1,9 @@
 import enum
-from sqlalchemy import Column, Integer, String, func, ForeignKey, Boolean, Table
+from sqlalchemy import Column, Integer, String, func, ForeignKey, Boolean, Table, Numeric
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql.sqltypes import DateTime
+from sqlalchemy_utils import aggregated
 
 
 Base = declarative_base()
@@ -20,6 +21,7 @@ class RoleNames(enum.Enum):
 
 class Role(Base):
     __tablename__ = "roles"
+
     id = Column(Integer, primary_key=True)
     name = Column(String(RoleNames.get_max_role_len()), default=RoleNames.user)
     can_post_own_pict = Column(Boolean, default=True)
@@ -45,6 +47,7 @@ class Role(Base):
 
 class User(Base):
     __tablename__ = "users"
+
     id = Column(Integer, primary_key=True)
     username = Column(String(100))
     email = Column(String(100), unique=True, nullable=False)
@@ -79,6 +82,7 @@ class Tag(Base):
 
 class Picture(Base):
     __tablename__ = "pictures"
+
     id = Column(Integer, primary_key=True)
     picture_url = Column(String(1024))
     description = Column(String(10000))
@@ -90,6 +94,12 @@ class Picture(Base):
     tags = relationship("Tag", secondary=picture_m2m_tag, backref="pictures")
     user = relationship("User", backref="pictures")
 
+    @aggregated('rating', Column(Numeric))
+    def avg_rating(self):
+           return func.avg(Rating.rate)
+    
+    rating = relationship('Rating')
+   
 
 class TransformedPicture(Base):
     __tablename__ = 'transformed_pictures'
@@ -104,6 +114,7 @@ class TransformedPicture(Base):
 
 class Comment(Base):
     __tablename__ = "comments"
+
     id = Column(Integer, primary_key=True)
     text = Column(String(10000))
     created_at = Column(DateTime, default=func.now())
@@ -118,7 +129,19 @@ class Comment(Base):
 
 class BlacklistToken(Base):
     __tablename__ = 'blacklist_tokens'
-    
+
+   id = Column(Integer, primary_key=True)
+   token = Column(String(500), unique=True, nullable=False)
+   blacklisted_on = Column(DateTime, default=func.now())
+
+
+class Rating(Base):
+    __tablename__ = 'rating'
+
     id = Column(Integer, primary_key=True)
-    token = Column(String(500), unique=True, nullable=False)
-    blacklisted_on = Column(DateTime, default=func.now())
+    picture_id = Column('picture_id', ForeignKey(Picture.id, ondelete='CASCADE'), nullable=False)
+    rate = Column(Integer, default=0)
+    user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
+    created_at = Column(DateTime, default=func.now())
+
+    user = relations
