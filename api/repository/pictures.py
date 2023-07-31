@@ -1,11 +1,10 @@
 from typing import List, Type
-
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from api.database.models import Picture, Tag, User
-from api.repository.tags import create_tag
-from api.schemas.essential import PictureCreate
+from api.repository.tags import get_or_create_tag
+from api.schemas.essential import PictureCreate, TagResponse
 from api.services.cloud_picture import CloudImage
 from api.conf.config import settings
 
@@ -37,6 +36,7 @@ async def create_picture(description: str, tags: List[str], file_path: str, shar
     db.refresh(picture)
 
     return picture
+
 
 
 def get_tag_by_name(tag_name: str, db: Session) -> Tag | None:
@@ -71,7 +71,7 @@ async def transformation_list_to_tag(tags: list, user: User, db: Session) -> Lis
     list_tags = []
     if tags:
         for tag_name in tags:
-            tag = await create_tag(tag_name.strip(), db)
+            tag = await get_or_create_tag(tag_name.strip(), db)
             list_tags.append(tag)
     return list_tags
 
@@ -175,7 +175,7 @@ async def update_picture(picture_id: int, body: PictureCreate, user: User, db: S
             if len(tag_names) > settings.max_tags:
                 raise HTTPException(status_code=400, detail=f"Too many tags. The maximum is {settings.max_tags}. "
                                                             f"The picture already has {len(picture.tags)} tags")
-            picture.tags = await transformation_list_to_tag(tag_names, db)
+            picture.tags = await transformation_list_to_tag(tag_names, user, db)
             
         picture.description = body.description
         picture.update = True
