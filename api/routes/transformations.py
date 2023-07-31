@@ -145,19 +145,19 @@ async def remove_transformed_picture(transformation_id: int,
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Transformation not found")
 
-# @router.get('/all/{base_picture_id}', response_model=List[TransformPictureResponse])
-# async def get_list_of_transformations_picture(base_picture_id: int, skip: int = 0, limit: int = 10,
-#                                               current_user: User = Depends(auth_service.get_current_user),
-#                                               db: Session = Depends(get_db)):
-#     """
-#     The get_list_of_transformed_for_picture function returns a list of transformed pictures for the given base image.
-#
-#     :param base_picture_id: int: Get the base picture id from the database
-#     :param skip: int: Skip the first n images in the list
-#     :param limit: int: Limit the number of results returned
-#     :param current_user: User: Get the current user from the database
-#     :param db: Session
-#     :return: A list of transformed pictures for a given base image
-#     """
-#     lst = await repo_transform.get_all_tr_pict(base_picture_id, skip, limit, current_user, db)
-#     return lst
+@router.get('/all/{base_picture_id}', response_model=List[TransformPictureResponse])
+async def get_list_of_transformations_picture(base_picture_id: int, skip: int = 0, limit: int = 10,
+                                              current_user: User = Depends(auth_service.get_current_user),
+                                              db: Session = Depends(get_db)):
+    """
+    The get_list_of_transformed_for_picture function returns a list of transformed pictures for the given base image.
+
+    :param base_picture_id: int: Get the base picture id from the database
+    :param skip: int: Skip the first n images in the list
+    :param limit: int: Limit the number of results returned
+    :param current_user: User: Get the current user from the database
+    :param db: Session
+    :return: A list of transformed pictures for a given base image
+    """
+    lst = await repo_transform.get_all_tr_pict(base_picture_id, skip, limit, current_user, db)
+    return lst
