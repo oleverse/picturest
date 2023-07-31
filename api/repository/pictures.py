@@ -1,8 +1,7 @@
-from copy import copy
 from typing import List, Type
 
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 from api.database.models import Picture, Tag, User
 from api.repository.tags import create_tag
@@ -29,7 +28,7 @@ async def create_picture(description: str, tags: List[str], file_path: str, shar
     tags_list = []
 
     if tags:
-        tags_list = await transformation_list_to_tag(tags, db)
+        tags_list = await transformation_list_to_tag(tags, user, db)
 
     picture = Picture(picture_url=file_path, description=description, tags=tags_list, shared=shared, user_id=user.id)
     db.add(picture)
@@ -44,7 +43,10 @@ def get_tag_by_name(tag_name: str, db: Session) -> Tag | None:
     return tag
 
 
-async def transformation_list_to_tag(tags: list, db: Session) -> List[Tag]:
+async def transformation_list_to_tag(tags: list, user: User, db: Session) -> List[Tag]:
+    if not user.role.can_post_tag:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to add tags")
+
     list_tags = []
     if tags:
         for tag_name in tags:
@@ -53,7 +55,7 @@ async def transformation_list_to_tag(tags: list, db: Session) -> List[Tag]:
     return list_tags
 
 
-async def get_picture(picture_id: int, user: User, db: Session) -> Picture | None:
+async def get_picture(picture_id: int, db: Session) -> Picture | None:
     picture = db.query(Picture).filter(Picture.id == picture_id).first()
     return picture
 
@@ -73,8 +75,9 @@ async def remove_picture(picture_id: int, user: User, db: Session):
     picture = db.query(Picture).filter(Picture.id == picture_id).first()
     if picture:
 
-        # TODO - кому дозволимо видаляти , наприклад - адміністратор може видаляти, що хоче, а юзер - свої
-        # if user.role == admin or picture.user_id == user.id
+        if picture.user_id != user.id and not user.role.can_del_not_own_pict:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="This picture belong's to another person. You are not allowed to remove it!")
         if picture.user_id == user.id:
             public_id = picture.picture_url.split("/")[-1]
             CloudImage.destroy(public_id)
@@ -86,8 +89,9 @@ async def remove_picture(picture_id: int, user: User, db: Session):
 async def update_picture(picture_id: int, body: PictureCreate, user: User, db: Session):
     picture = db.query(Picture).filter(Picture.id == picture_id and Picture.user_id == user.id).first()
     if picture:
-        # TODO - кому дозволимо видаляти , наприклад - адмністратор може видаляти, що хоче, а юзер - свої
-        # if user.role == admin or picture.user_id == user.id
+        if picture.user_id != user.id and not user.role.can_mod_not_own_pict:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="This picture belong's to another person. You are not allowed to update it!")
         if body.tags is None:
             picture.tags = []
         elif body.tags:

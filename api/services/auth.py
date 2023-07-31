@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Type
 
 from fastapi import HTTPException, status, Depends
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from api.database.models import BlacklistToken
+from api.database.models import BlacklistToken, User
 from jose import JWTError, jwt
 
 from api.database.db import get_db
@@ -63,7 +63,7 @@ class Auth:
         except JWTError:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
 
-    async def get_current_user(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    async def get_current_user(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> Type[User]:
         credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                               detail='Could not validate credentials',
                                               headers={'WWW-Authenticate': 'Bearer'})
@@ -76,7 +76,7 @@ class Auth:
                     raise credentials_exception
             else:
                 raise credentials_exception
-        except JWTError as e:
+        except JWTError:
             raise credentials_exception
 
         user = await repository_users.get_user_by_email(email, db)
