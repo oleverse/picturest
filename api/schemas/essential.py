@@ -71,6 +71,11 @@ class UserModel(BaseModel):
     password: str = Field(min_length=0, max_length=14)
 
 
+class UserUpdate(UserModel):
+    is_active: bool
+    role: str
+
+
 class UserDb(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -79,6 +84,18 @@ class UserDb(BaseModel):
     email: EmailStr
     created_at: datetime
     avatar: Optional[str] = None
+
+
+class UserProfileModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    username: str
+    email: EmailStr
+    created_at: datetime
+    avatar: Optional[str] = None
+    number_pictures: Optional[int]
+    number_comments: Optional[int]
 
 
 class UserResponse(BaseModel):
