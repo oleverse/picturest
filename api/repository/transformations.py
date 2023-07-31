@@ -63,7 +63,7 @@ async def remove_transformation(transformation_id: int, current_user: User, db: 
     return pict
 
 
-async def get_all_tr_pict(base_id: int, sk: int, lmt: int, user: User, db: Session) -> List[Type[TransformedPicture]]:
+async def get_all_tr_pict(base_id: int, skip: int, limit: int, user: User, db: Session) -> List[Type[TransformedPicture]]:
     """
     The get_all_tr_pict function returns a list of all transform pictures for the given picture id.
 
@@ -75,8 +75,8 @@ async def get_all_tr_pict(base_id: int, sk: int, lmt: int, user: User, db: Sessi
     :return: A list of all the transformations for the picture
     """
 
-    t_pictures = db.query(TransformedPicture).filter(TransformedPicture.picture_id == base_id).offset(sk).limit(
-        lmt).all()
+    t_pictures = db.query(TransformedPicture)\
+        .filter(TransformedPicture.picture_id == base_id).offset(skip).limit(limit).all()
 
     return t_pictures
 
