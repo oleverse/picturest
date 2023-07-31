@@ -44,6 +44,8 @@ class Role(Base):
     can_mod_not_own_comment = Column(Boolean, default=False)
     can_del_not_own_comment = Column(Boolean, default=False)
 
+    can_change_user_role = Column(Boolean, default=False)
+
 
 class User(Base):
     __tablename__ = "users"
@@ -53,13 +55,14 @@ class User(Base):
     email = Column(String(100), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     refresh_token = Column(String(255), nullable=True)
-    role_id = Column(Integer, ForeignKey(Role.id, ondelete="CASCADE"))
+    role_id = Column(Integer, ForeignKey(Role.id))
     confirmed = Column(Boolean, default=False)
     is_active = Column(Boolean, default=False)
     slug = Column(String(255), unique=True, nullable=False)
     avatar = Column(String(1024), nullable=True)
     created_at = Column(DateTime, default=func.now(), onupdate=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    role = relationship("Role", backref="users")
 
 
 picture_m2m_tag = Table(

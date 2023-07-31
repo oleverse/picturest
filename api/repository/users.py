@@ -5,7 +5,7 @@ from libgravatar import Gravatar
 from slugify import slugify
 from sqlalchemy.orm import Session
 
-from api.database.models import User, BlacklistToken
+from api.database.models import User, BlacklistToken, RoleNames, Role
 from api.schemas.essential import UserModel
 
 
@@ -13,7 +13,7 @@ async def get_users_count(db: Session):
     return len(db.query(User).limit(1).all())
 
 
-async def get_user_by_email(email: str, db: Session):
+async def get_user_by_email(email: str, db: Session) -> Type[User]:
     return db.query(User).filter(User.email == email).first()
 
 
@@ -29,11 +29,16 @@ async def create_user(body: UserModel, db: Session):
         avatar = g.get_image()
     except Exception as e:
         print(e)
+
+    # first registered user is always admin
+    default_role = RoleNames.user.name if await get_users_count(db) else RoleNames.admin.name
+    role = db.query(Role).filter(Role.name == default_role).first()
     new_user = User(
         username=body.username,
         email=body.email,
         password=body.password,
-        avatar=avatar
+        avatar=avatar,
+        role_id=role.id
     )
     # new_user = User(**body.model_dump(), avatar=avatar)
     new_user.slug = slugify(body.username)
