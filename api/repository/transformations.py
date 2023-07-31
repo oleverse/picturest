@@ -17,6 +17,19 @@ async def get_picture_for_transformation(pict_id: int, user: User, db: Session) 
 async def set_transform_picture(picture_id: int, modify_url: str, user: User, db: Session) -> TransformedPicture | None:
     # TODO roles
 
+    """
+    The set_transform_picture function queries the Picture in DB with the given picture_id and user.
+     If it finds one, it will create a new TransformedPicture object with url and id.
+     It will add this to the database and commit it. If there is an integrity error when we try to commit this change
+    to our database (i.e., if there already exists such an entry), we rollback these changes so as not
+
+    :param picture_id: int: Specify the picture to be modified
+    :param modify_url: str: Store the url of the transformed picture
+    :param user: User: Check if the user is allowed to delete the picture
+    :param db: Session: Access the database
+    :return: A transformed picture object
+    """
+
     picture = db.query(Picture).filter(and_(Picture.id == picture_id, Picture.user_id == user.id)).first()
     if picture:
         image = TransformedPicture(url=modify_url, picture_id=picture.id)
@@ -68,8 +81,8 @@ async def get_all_tr_pict(base_id: int, skip: int, limit: int, user: User, db: S
     The get_all_tr_pict function returns a list of all transform pictures for the given picture id.
 
     :param base_id: int: Get the picture id of the picture that was transformed
-    :param sk: int: Skip the first n number of items in a list
-    :param lmt: int: Limit the number of images returned
+    :param skip: int: Skip the first n number of items in a list
+    :param limit: int: Limit the number of images returned
     :param user: User: current user
     :param db: Session: Access the database
     :return: A list of all the transformations for the picture
