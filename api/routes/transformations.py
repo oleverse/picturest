@@ -42,7 +42,7 @@ async def transformation_for_picture(base_image_id: int, body: TransformPictureM
 
     if image_url is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Transformation not found")
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Picture with id {base_image_id} not found")
     transform_list = create_list_transformation(body)
     url = CloudImage.get_transformed_url(image_url, transform_list)
     img = await repo_transform.set_transform_picture(base_image_id, url, current_user, db)
@@ -70,7 +70,7 @@ async def transformation_rotate(base_image_id: int, body: RotatePictureModel,
     transform_list = []
     if image_url is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Transformation not found")
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Picture with id {base_image_id} not found")
 
     transform_list.append({'angle': body.degree})
     url = CloudImage.get_transformed_url(image_url, transform_list)
@@ -98,7 +98,7 @@ async def transformation_resize(base_image_id: int, body: TransformCropModel,
     transform_list = []
     if image_url is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Transformation not found")
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Picture with id {base_image_id} not found")
     t_dict = body.model_dump()
     transform_list.append(t_dict)
     url = CloudImage.get_transformed_url(image_url, transform_list)
@@ -136,7 +136,7 @@ async def remove_transformed_picture(transformation_id: int,
     The remove_transformed_picture function is used to remove a transformed image from the database.
 
     :param transformation_id: int: Identify the transformation that is to be removed
-    :param current_user: User: Get the user that is currently logged in
+    :param current_user: User: Get the user that is currently authorised
     :param db: Session
     :return: An image object
     """
@@ -145,14 +145,15 @@ async def remove_transformed_picture(transformation_id: int,
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Transformation not found")
 
+
 @router.get('/all/{base_picture_id}', response_model=List[TransformPictureResponse])
-async def get_list_of_transformations_picture(base_picture_id: int, skip: int = 0, limit: int = 10,
+async def get_list_of_picture_transformations(base_picture_id: int, skip: int = 0, limit: int = 10,
                                               current_user: User = Depends(auth_service.get_current_user),
                                               db: Session = Depends(get_db)):
     """
-    The get_list_of_transformed_for_picture function returns a list of transformed pictures for the given base image.
+    The get_list_of_picture_transformations function returns a list of transformations (urls) for the given base image.
 
-    :param base_picture_id: int: Get the base picture id from the database
+    :param base_picture_id: int: Get the base_picture id from the database
     :param skip: int: Skip the first n images in the list
     :param limit: int: Limit the number of results returned
     :param current_user: User: Get the current user from the database
@@ -160,4 +161,7 @@ async def get_list_of_transformations_picture(base_picture_id: int, skip: int = 
     :return: A list of transformed pictures for a given base image
     """
     lst = await repo_transform.get_all_tr_pict(base_picture_id, skip, limit, current_user, db)
+    if len(lst) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Transformation not found")
     return lst

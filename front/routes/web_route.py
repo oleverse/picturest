@@ -1,6 +1,5 @@
 from pathlib import Path
 from re import split as re_split
-from typing import Type
 
 from fastapi import Request, APIRouter, Form, HTTPException, Depends, UploadFile, File, status, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -27,7 +26,7 @@ templates = Jinja2Templates(directory=template_dir)
 
 async def get_user_token(request: Request) -> str:
     if request and "access_token" in request.cookies:
-        return request.cookies["access_token"].split(" ")[1].strip()
+        return request.cookies["access_token"].split()[1].strip()
 
 
 async def get_logged_in_user(request: Request, db: Session) -> User:
@@ -102,7 +101,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
     await form.load_data()
     if await form.is_valid():
         try:
-            response = RedirectResponse("/authorized?msg=Логін%20виконаний%20успішно!",
+            response = RedirectResponse("/authorized",
                                         status_code=status.HTTP_302_FOUND)
             login_result = await auth_route.login(response=response, body=form, db=db)
             form.__dict__.update(msg="Login Successful :)")
@@ -111,9 +110,9 @@ async def login(request: Request, db: Session = Depends(get_db)):
             response.headers["location"] = f"/authorized?user_id={logged_in_user.id}"
 
             return response
-        except HTTPException:
+        except HTTPException as http_ex:
             form.__dict__.update(msg="")
-            form.__dict__.get("errors").append("Incorrect Email or Password")
+            form.__dict__.get("errors").append(http_ex.detail)
             return templates.TemplateResponse("login.html", form.__dict__)
     return templates.TemplateResponse("/index.html", form.__dict__)
 
@@ -150,9 +149,10 @@ async def upload_photo_view(request: Request,
         logged_in_user = await get_logged_in_user(request, db)
 
         tags_list = [tag_name.strip() for tag_name in re_split(r'@\s+,\s+', tags)]
-        await pictures.create_picture(description=description, file=file, tags=tags_list, db=db, current_user=logged_in_user)
+        await pictures.create_picture(description=description, file=file, tags=tags_list,
+                                      db=db, current_user=logged_in_user)
 
-        return RedirectResponse("/authorized?msg=Фото%20завантажено%20успішно!", status_code=status.HTTP_302_FOUND,
+        return RedirectResponse("/authorized", status_code=status.HTTP_302_FOUND,
                                 headers={"Location": f"/authorized?user_id={logged_in_user.id}"})
     except HTTPException as http_ex:
         if http_ex.status_code == status.HTTP_401_UNAUTHORIZED:

@@ -7,11 +7,15 @@ from api.conf.config import settings
 class TagModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    id : int
     name: str = Field(max_length=100)
 
 
 class TagResponse(TagModel):
-    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+    tags: Optional[List[TagModel]] = []
+    id:  Optional[int] = None
 
 
 class PictureBase(BaseModel):
@@ -86,10 +90,22 @@ class UserResponse(BaseModel):
     detail: str = 'User successfully created'
 
 
+
 class UserUpdate(BaseModel):
     password: constr(min_length=8, max_length=100) = None
     username: str
     email: EmailStr
+
+
+class UserStatusChange(BaseModel):
+    email: EmailStr
+
+
+class UserStatusResponse(BaseModel):
+    username: str
+    email: EmailStr
+    is_active: bool
+    updated_at: datetime
 
 
 class TokenModel(BaseModel):

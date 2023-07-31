@@ -3,8 +3,10 @@ from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredent
 from sqlalchemy.orm import Session
 
 from api.database.db import get_db
+from api.database.models import User, RoleNames
 from api.repository import users as repository_users
-from api.schemas.essential import UserModel, UserResponse, TokenModel, RequestEmail
+from api.schemas.essential import RequestEmail, UserStatusResponse, UserStatusChange
+from api.schemas.essential import UserModel, UserResponse, TokenModel
 from api.services.auth import auth_service
 from api.services.email import send_confirmation_email
 
@@ -15,6 +17,15 @@ security = HTTPBearer()
 
 @router.post('/register', response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(body: UserModel, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    """
+     Register new user. If user with this email exists, raise 409 error
+
+    :param body: UserModel: Get the data from the request body
+    :param background_tasks: BackgroundTasks: Add a task to the background tasks queue
+    :param request: Request: Get the base url of the application
+    :param db: Session: Get the database session
+    :return: A dictionary with the user. Response with 201 status code.
+    """
     exist_user = await repository_users.get_user_by_email(body.email, db)
     if exist_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Account already exists')
@@ -30,11 +41,24 @@ async def register(body: UserModel, request: Request, background_tasks: Backgrou
 
 @router.post('/login', response_model=TokenModel)
 async def login(response: Response, body: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """
+    The login function is used to authenticate a user.
+
+    It takes the email and password of the user as input,
+    checks if they are valid, and returns an access token.
+
+    :param response: Response
+    :param body: OAuth2PasswordRequestForm: Get the username and password from the request body
+    :param db: Session: Get a database session
+    :return: Access and refresh tokens
+    """
     user = await repository_users.get_user_by_email(body.username, db)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Incorrect login or password')
     if not user.confirmed:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Email not confirmed')
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='The user is deactivated.')
     if not auth_service.verify_password(body.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Incorrect login or password')
 
@@ -51,6 +75,15 @@ async def login(response: Response, body: OAuth2PasswordRequestForm = Depends(),
 
 @router.get('/refresh_token', response_model=TokenModel)
 async def refresh_tokens(credentials: HTTPAuthorizationCredentials = Security(security), db: Session = Depends(get_db)):
+    """
+    The refresh_token function is used to refresh the access token.
+        The function takes in a refresh token and returns a new access_token,
+        refresh_token, and the type of token (bearer).
+
+    :param credentials: HTTPAuthorizationCredentials: Get the token from the authorization header
+    :param db: Session: Get a database session
+    :return: A dict with the access_token, refresh_token and token type
+    """
     token = credentials.credentials
     email = await auth_service.decode_refresh_token(token)
     user = await repository_users.get_user_by_email(email, db)
@@ -65,6 +98,18 @@ async def refresh_tokens(credentials: HTTPAuthorizationCredentials = Security(se
 
 @router.get('/confirm_email/{token}')
 async def confirm_email(token: str, db: Session = Depends(get_db)):
+    """
+    The confirmed_email function is used to confirm a user's email address.
+    It takes the token from the URL and uses it to get the user's email address.
+
+    If user with this email doesn't exist raise 400 error.
+
+    IF user is already confirmed, return message 'Your email has already been confirmed'
+
+    :param token: str: Get the token from the url
+    :param db: Session: Get a database session
+    :return: A message that the email is already confirmed or a message that the email has been confirmed
+    """
     email = await auth_service.get_email_from_token(token)
     user = await repository_users.get_user_by_email(email, db)
     if user is None:
@@ -78,6 +123,17 @@ async def confirm_email(token: str, db: Session = Depends(get_db)):
 @router.post('/request_email_confirmation')
 async def request_email_confirmation(body: RequestEmail, background_tasks: BackgroundTasks, request: Request,
                                      db: Session = Depends(get_db)):
+    """
+    The request_email_confirmation function is used to send a confirmation email to the user.
+    It takes in an email address and sends a confirmation link to that address.
+    The function returns a message indicating whether the user's email has been confirmed.
+
+    :param body: RequestEmail: Get the email from the request body
+    :param background_tasks: BackgroundTasks: Add a task to the background tasks queue
+    :param request: Request: Get the base_url of the request
+    :param db: Session: Get a database session
+    :return: A message to the user
+    """
     user = await repository_users.get_user_by_email(body.email, db)
     if user.confirmed:
         return {'message': 'Your email is already confirmed'}
@@ -89,7 +145,39 @@ async def request_email_confirmation(body: RequestEmail, background_tasks: Backg
 @router.post("/logout")
 async def logout(credentials: HTTPAuthorizationCredentials = Security(security),
                  db: Session = Depends(get_db)):
+    """
+    The logout function is used to log out a user.
+
+    :param credentials: HTTPAuthorizationCredentials: Get the token from the request header
+    :param db: Session: Create a database session
+    :return: A message that the user has been logged out
+    """
     token = credentials.credentials
 
     await repository_users.add_to_blacklist(token, db)
     return {"message": 'User has been logged out.'}
+
+
+@router.put("/users/deactivate", response_model=UserStatusResponse)
+async def user_deactivate(user_data: UserStatusChange, current_user: User = Depends(auth_service.get_current_user),
+                          db: Session = Depends(get_db)):
+    if current_user.role.name != RoleNames.admin.name:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only administrators can deactivate users!")
+
+    user = await repository_users.ban_user(user_data.email, current_user.id, db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found!")
+
+    return user
+
+
+@router.put("/users/activate", response_model=UserStatusResponse)
+async def user_activate(user_data: UserStatusChange, current_user: User = Depends(auth_service.get_current_user),
+                        db: Session = Depends(get_db)):
+    if current_user.role.name != RoleNames.admin.name:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only administrators can activate users!")
+    user = await repository_users.ban_user(user_data.email, current_user.id, db, is_active=True)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found!")
+
+    return user
