@@ -1,20 +1,14 @@
-
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
+from fastapi import status
 from api.database.db import get_db
 from api.database.models import User, Picture
 from api.repository.comment_service import get_comments_by_picture_id
-
 from api.repository.searching_service import get_picture_by_id, search_by_description, search_by_tag, \
-    search_pictures_by_query, search_pictures_by_user
+    search_pictures_by_user
 from api.schemas.essential import PictureResponse, PictureResponseWithComments
-
+from api.repository import pictures as repository_pictures
 from typing import List, Optional, Type
-
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Query, Depends, HTTPException
-
-
 
 # Імпортуємо функцію для отримання поточного користувача із системи авторизації
 from api.services.auth import auth_service
@@ -23,21 +17,7 @@ from api.services.auth import auth_service
 router = APIRouter(prefix='/search', tags=["Search"])
 
 
-# Ендпоінт для отримання світлини за її ідентифікатором GET search/{picture_id}
-@router.get("/{picture_id}", response_model=PictureResponseWithComments)
-async def get_picture(picture_id: int, with_comments: bool = True, db: Session = Depends(get_db),
-                      current_user: User = Depends(auth_service.get_current_user)):
-    picture = await get_picture_by_id(picture_id, current_user, db)
-    if picture is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
-
-    if with_comments:
-        picture_with_comments = picture.__dict__
-        comments = await get_comments_by_picture_id(db, picture_id)
-        picture_with_comments["comments"] = comments
-        return picture_with_comments
-
-    return picture
+# Ендпоінт для отримання світлини за її ідентифікатором
 
 
 @router.get("/description/", response_model=List[PictureResponse])
@@ -73,7 +53,7 @@ async def search_pictures_by_tag(
 
 # Ендпоінт для пошуку користувачів за іменем, електронною поштою або іншими критеріями GET /pictures/users/search
 @router.get("/admin/{picture_id}", response_model=List[PictureResponse])
-async def search_pictures_by_admin_and_moder(user_query: str = Query(None, min_length=1, max_length=100),
+async def search_user_by_admin_and_moder(user_query: str = Query(None, min_length=1, max_length=100),
                                              db: Session = Depends(get_db),
                                              current_user: User = Depends(auth_service.get_current_user)):
     # Перевіряємо чи користувач є модератором або адміністратором
@@ -81,4 +61,12 @@ async def search_pictures_by_admin_and_moder(user_query: str = Query(None, min_l
         raise HTTPException(status_code=403, detail="You don't have permission to perform this action.")
 
     pictures = search_pictures_by_user(db, user_query)
+    return pictures
+
+
+@router.get("/by_tag/{tag_name}", response_model=List[PictureResponse])
+async def get_pictures_by_tag(tag_name: str, db: Session = Depends(get_db)):
+    pictures = await repository_pictures.get_picture_by_tag(tag_name, db)
+    if not pictures:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Picture with tag {tag_name} not found")
     return pictures
