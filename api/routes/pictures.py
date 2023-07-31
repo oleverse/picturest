@@ -7,7 +7,6 @@ from api.database.db import get_db
 from api.database.models import User
 from api.repository import pictures as repository_pictures
 from api.repository.comments import get_comments_by_picture_id
-from api.repository.searching_service import get_picture_by_id
 
 from api.schemas.essential import PictureResponse, PictureCreate, PictureResponseWithComments
 from api.services.auth import auth_service
@@ -36,10 +35,11 @@ async def create_picture(description: str = Form(None), tags: List = Form(None),
         picture_url = CloudImage.get_url_for_picture(public_id, r)
         return await repository_pictures.create_picture(description, tags, picture_url, shared, db, current_user)
 
+
 @router.get("/{picture_id}", response_model=PictureResponseWithComments)
 async def get_picture(picture_id: int, with_comments: bool = True, db: Session = Depends(get_db),
                       current_user: User = Depends(auth_service.get_current_user)):
-    picture = await get_picture_by_id(picture_id, current_user, db)
+    picture = await repository_pictures.get_picture(picture_id, db)
     if picture is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
 
@@ -50,6 +50,7 @@ async def get_picture(picture_id: int, with_comments: bool = True, db: Session =
         return picture_with_comments
 
     return picture
+
 
 @router.get("/pictures/", response_model=List[PictureResponse])
 async def get_all_pictures(limit: int = Query(10, le=100), offset: int = 0, db: Session = Depends(get_db)):
