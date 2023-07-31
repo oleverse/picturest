@@ -12,6 +12,13 @@
 </head>
 <body>
     <div class="container">
+        <div class="row">
+              <div class="text-danger font-weight-bold text-uppercase mt-4">
+                    {% for error in errors %}
+                        <span>{{error}}</span>
+                    {% endfor %}
+              </div>
+        </div>
         <!-- Форма для логіну -->
         <form action="/login" method="post" class="mt-4">
             <div class="mb-3">
