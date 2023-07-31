@@ -42,7 +42,7 @@ async def transformation_for_picture(base_image_id: int, body: TransformPictureM
 
     if image_url is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
+            status_code=status.HTTP_404_NOT_FOUND, detail="Transformation not found")
     transform_list = create_list_transformation(body)
     url = CloudImage.get_transformed_url(image_url, transform_list)
     img = await repo_transform.set_transform_picture(base_image_id, url, current_user, db)
@@ -70,7 +70,7 @@ async def transformation_rotate(base_image_id: int, body: RotatePictureModel,
     transform_list = []
     if image_url is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
+            status_code=status.HTTP_404_NOT_FOUND, detail="Transformation not found")
 
     transform_list.append({'angle': body.degree})
     url = CloudImage.get_transformed_url(image_url, transform_list)
@@ -98,7 +98,7 @@ async def transformation_resize(base_image_id: int, body: TransformCropModel,
     transform_list = []
     if image_url is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
+            status_code=status.HTTP_404_NOT_FOUND, detail="Transformation not found")
     t_dict = body.model_dump()
     transform_list.append(t_dict)
     url = CloudImage.get_transformed_url(image_url, transform_list)
@@ -123,7 +123,7 @@ async def get_qrcode_for_transform_image(transform_picture_id: int,
     picture = await repo_transform.get_transform_picture(transform_picture_id, current_user, db)
     if picture is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
+            status_code=status.HTTP_404_NOT_FOUND, detail="Transformation not found")
     qr_code = CloudImage.get_qrcode(picture.url)
     return qr_code
 
@@ -143,7 +143,7 @@ async def remove_transformed_picture(transformation_id: int,
     el = await repo_transform.remove_transformation(transformation_id, current_user, db)
     if el is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="NOT_FOUND")
+            status_code=status.HTTP_404_NOT_FOUND, detail="Transformation not found")
 
 # @router.get('/all/{base_picture_id}', response_model=List[TransformPictureResponse])
 # async def get_list_of_transformations_picture(base_picture_id: int, skip: int = 0, limit: int = 10,

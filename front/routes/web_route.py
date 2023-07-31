@@ -1,20 +1,21 @@
 from pathlib import Path
-from fastapi import Request, APIRouter, Form, HTTPException, Depends, UploadFile, File, Header
+from re import split as re_split
+
+from fastapi import Request, APIRouter, Form, HTTPException, Depends, UploadFile, File, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from psycopg2 import IntegrityError
 from sqlalchemy.orm import Session
-from starlette import status
-# TODO: замінити безпосереднє звернення до бази даних на виклик API функції для отримання світлин
+
 from api.database.db import get_db
-from api.database.models import User, Picture, Tag
 from api.repository.comment_service import create_comment
 from api.repository.pictures import get_user_pictures, get_all_pictures
-from api.schemas.essential import CommentCreate
-from api.services.auth import auth_service
 from api.repository.users import add_to_blacklist
+from api.routes import auth as auth_route, pictures
+from api.schemas.essential import CommentCreate, UserModel
+from api.services.auth import auth_service
 from front.routes.web_forms import LoginForm, UserCreateForm
-from api.routes import auth, pictures, comments
+
 
 router = APIRouter(tags=["web"])
 
@@ -22,12 +23,17 @@ template_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=template_dir)
 
 
+def get_user_token(request: Request) -> str:
+    if request and "access_token" in request.cookies:
+        return request.cookies["access_token"].split(" ")[1].strip()
+
+
 @router.get("/", response_class=HTMLResponse)
 async def root(request: Request, db: Session = Depends(get_db)):
-    pictures = get_all_pictures(limit=5, offset=0, db=db)
+    all_pictures = await get_all_pictures(limit=5, offset=0, db=db)
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "photos": pictures
+        "photos": all_pictures
     })
 
 
@@ -37,12 +43,12 @@ async def home_page(request: Request, user_id: int = 1, db: Session = Depends(ge
     if not access_token:
         raise HTTPException(status_code=401, detail="Немає токену автентифікації")
 
-    pictures = get_all_pictures(limit=5, offset=0, db=db)
+    all_pictures = await get_all_pictures(limit=5, offset=0, db=db)
     pictures_user = await get_user_pictures(user_id=user_id, db=db)
     response = templates.TemplateResponse("authorized.html", {
         "request": request,
         "photos_user": pictures_user,
-        "photos": pictures
+        "photos": all_pictures
     })
     return response
 
@@ -70,29 +76,29 @@ async def add_comment(
         picture_id: int = Form(...),
         db: Session = Depends(get_db)
 ):
-    comment = create_comment(comment_data=CommentCreate(text=comment_text),
-                             user_id=user_id, picture_id=picture_id, db=db)
+    comment = await create_comment(comment_data=CommentCreate(text=comment_text, picture_id=picture_id),
+                                   user_id=user_id, db=db)
 
     if not comment:
         raise HTTPException(status_code=404, detail="Picture not found")
 
-    return templates.TemplateResponse("success.html", {"request": request, "item_name": "Коментар", "item": comment})
+    return templates.TemplateResponse("success.html", {"request": request,
+                                                       "item_name": "Коментар", "item": comment.text})
 
 
 @router.post("/login", response_class=HTMLResponse)
-async def login(request: Request, user_id: int = 1, db: Session = Depends(get_db)):
+async def login(request: Request, db: Session = Depends(get_db)):
     form = LoginForm(request)
     await form.load_data()
     if await form.is_valid():
         try:
-            form.__dict__.update(msg="Login Successful :)")
             response = RedirectResponse("/authorized?msg=Логін%20виконаний%20успішно!",
-                                        status_code=status.HTTP_302_FOUND,
-                                        headers={"Location": f"/authorized?user_id={user_id}"})
+                                        status_code=status.HTTP_302_FOUND)
+            login_result = await auth_route.login(response=response, body=form, db=db)
+            form.__dict__.update(msg="Login Successful :)")
 
-            access_token = auth_service.create_access_token(data={"sub": user_id})
-            response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
-            await auth.login(response=response, body=form, db=db)
+            logged_in_user = await auth_service.get_current_user(login_result["access_token"], db)
+            response.headers["location"] = f"/authorized?user_id={logged_in_user.id}"
 
             return response
         except HTTPException:
@@ -109,7 +115,9 @@ async def register(request: Request, db: Session = Depends(get_db)):
     if await form.is_valid():
 
         try:
-            await auth.register(body=form, db=db)
+            await auth_route.register(request=request,
+                                      body=UserModel(username=form.username, email=form.email, password=form.password),
+                                      db=db)
             return RedirectResponse(
                 "/?msg=Successfully-Registered",
                 status_code=status.HTTP_302_FOUND)  # default is post request, to use get request added status code 302
@@ -122,22 +130,30 @@ async def register(request: Request, db: Session = Depends(get_db)):
 
 @router.post("/upload")
 async def upload_photo_view(request: Request,
+                            description: str = Form(),
+                            tags: str = Form(''),
                             file: UploadFile = File(...),
                             db: Session = Depends(get_db)
                             ):
-    user = await auth.auth_service.get_current_user(token=request.cookies["access_token"][7:], db=db)
+    try:
+        user = await auth_service.get_current_user(token=get_user_token(request), db=db)
 
-    await pictures.create_picture(description="Some description", file=file, tags=['1'], db=db,
-                                  current_user=user)
+        tags_list = [tag_name.strip() for tag_name in re_split(r'@\s+,\s+', tags)]
+        await pictures.create_picture(description=description, file=file, tags=tags_list, db=db, current_user=user)
 
-    return RedirectResponse("/authorized?msg=Фото%20завантажено%20успішно!", status_code=status.HTTP_302_FOUND,
-                            headers={"Location": f"/authorized?user_id={user.id}"})
+        return RedirectResponse("/authorized?msg=Фото%20завантажено%20успішно!", status_code=status.HTTP_302_FOUND,
+                                headers={"Location": f"/authorized?user_id={user.id}"})
+    except HTTPException as http_ex:
+        if http_ex.status_code == status.HTTP_401_UNAUTHORIZED:
+            return templates.TemplateResponse("/fail.html", {
+                "request": request,
+                "error": "Не вдалося визначити користувача!"})
+        raise http_ex
 
 
 @router.post("/logout_user")
 async def logout_user(request: Request, db: Session = Depends(get_db)):
     access_token = request.cookies.get("access_token")
-    print(access_token)
     if not access_token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 

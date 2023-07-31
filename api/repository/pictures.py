@@ -58,12 +58,12 @@ async def get_picture(picture_id: int, user: User, db: Session) -> Picture | Non
     return picture
 
 
-async def get_user_pictures(limit: int, offset: int, user: int, db: Session) -> list[Type[Picture]]:
-    pictures = db.query(Picture).filter(Picture.user_id == user).limit(limit).offset(offset).all()
+async def get_user_pictures(user_id: int, db: Session, limit: int = 10, offset: int = 0) -> list[Type[Picture]]:
+    pictures = db.query(Picture).filter(Picture.user_id == user_id).limit(limit).offset(offset).all()
     return pictures
 
 
-async def get_all_pictures(limit: int, offset: int, db: Session) -> list[Type[Picture]]:
+async def get_all_pictures(db: Session, limit: int = 10, offset: int = 0) -> list[Type[Picture]]:
     pictures = db.query(Picture).filter(Picture.shared.is_(True)).limit(limit).offset(offset).all()
 
     return pictures

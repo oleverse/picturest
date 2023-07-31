@@ -8,7 +8,6 @@ from starlette import status
 from api.database.models import Rating, User, Picture, RoleNames
 
 
-
 async def create_rate(picture_id: int, rate: int, db: Session, user: User) -> Rating:
    
     self_picture = db.query(Picture).filter(and_(Picture.id == picture_id, Picture.user_id == user.id)).first()
@@ -45,21 +44,20 @@ async def delete_rate(rate_id: int, db: Session, user: User) -> Type[Rating]:
     return rate
 
 
-async def all_ratings(db: Session, user: User) -> list[Type[Rating]]:
+async def get_all_ratings(db: Session, user: User) -> list[Type[Rating]]:
     
     all_ratings = db.query(Rating).all()
     return all_ratings
 
 
-async def my_rating(db: Session, user: User) -> list[Type[Rating]]:
+async def get_my_rating(db: Session, user: User) -> list[Type[Rating]]:
    
     my_rating = db.query(Rating).filter(Rating.user_id == user.id).all()
     return my_rating
 
 
-async def user_rate_picture(user_id: int, picture_id: int, db: Session, user: User) -> Type[Rating] | None:
+async def get_user_rate_picture(user_id: int, picture_id: int, db: Session, user: User) -> Type[Rating] | None:
     
-    user_rate_picture = db.query(Rating).filter(and_(Rating.picture_id == picture_id, Rating.user_id == user_id)).first()
+    user_rate_picture = db.query(Rating)\
+        .filter(and_(Rating.picture_id == picture_id, Rating.user_id == user_id)).first()
     return user_rate_picture
-
-
