@@ -79,7 +79,7 @@ class UserDb(BaseModel):
     email: EmailStr
     created_at: datetime
     avatar: Optional[str] = None
-
+    photos_count: int
 
 class UserResponse(BaseModel):
     user: UserDb
