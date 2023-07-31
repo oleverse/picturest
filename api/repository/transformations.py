@@ -63,28 +63,20 @@ async def remove_transformation(transformation_id: int, current_user: User, db: 
     return pict
 
 
-# async def get_all_tr_pict(base_id: int, sk: int, lmt: int, user: User, db: Session) -> List[Type[TransformedPicture]]:
-#     """
-#     The get_all_tr_pict function returns a list of all transform pictures for the given picture id.
-#
-#     :param base_id: int: Get the picture id of the picture that was transformed
-#     :param sk: int: Skip the first n number of items in a list
-#     :param lmt: int: Limit the number of images returned
-#     :param user: User: current user
-#     :param db: Session: Access the database
-#     :return: A list of all the transformations for the picture
-#     """
-#
-#     # list_pict = db.query(TransformedPicture).filter(TransformedPicture.picture_id == base_id).offset(skip).limit(
-#     #     limit).all()
-#
-#     t_pictures = db.query(TransformedPicture).filter(TransformedPicture.picture_id == base_id).offset(sk).limit(
-#         lmt).all()
-#
-#     # t_pictures = db.query(TransformedPicture).join(Picture).filter(Picture.user_id == user.id).limit(limit).offset(
-#     #     skip).all()
-#
-#     print("test", t_pictures[0].picture_id, t_pictures[0].url, t_pictures[0].created_at, "7777")
+async def get_all_tr_pict(base_id: int, sk: int, lmt: int, user: User, db: Session) -> List[Type[TransformedPicture]]:
+    """
+    The get_all_tr_pict function returns a list of all transform pictures for the given picture id.
 
-#     return t_pictures
+    :param base_id: int: Get the picture id of the picture that was transformed
+    :param sk: int: Skip the first n number of items in a list
+    :param lmt: int: Limit the number of images returned
+    :param user: User: current user
+    :param db: Session: Access the database
+    :return: A list of all the transformations for the picture
+    """
+
+    t_pictures = db.query(TransformedPicture).filter(TransformedPicture.picture_id == base_id).offset(sk).limit(
+        lmt).all()
+
+    return t_pictures
 
