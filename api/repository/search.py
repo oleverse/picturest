@@ -85,10 +85,6 @@ def search_by_description(db, search_query):
     return db.query(Picture).filter(Picture.description.ilike(f"%{search_query}%"))
 
 
-async def get_picture_by_id(db: Session, picture_id: int) -> Type[Picture] | None:
-    return db.query(Picture).filter(Picture.id == picture_id).first()
-
-
 def search_pictures_by_user(db: Session, user_query: str) -> list[Row[tuple[Any]]]:
     # Ваша логіка пошуку зображень за вказаними користувачами
     return db.query(Picture.picture_url).join(User).filter(User.username.ilike(f"%{user_query}%")).all()
