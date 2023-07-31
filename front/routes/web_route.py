@@ -1,7 +1,7 @@
 from pathlib import Path
 from re import split as re_split
 
-from fastapi import Request, APIRouter, Form, HTTPException, Depends, UploadFile, File, status
+from fastapi import Request, APIRouter, Form, HTTPException, Depends, UploadFile, File, status, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from psycopg2 import IntegrityError
@@ -109,13 +109,14 @@ async def login(request: Request, db: Session = Depends(get_db)):
 
 
 @router.post("/register", response_class=HTMLResponse)
-async def register(request: Request, db: Session = Depends(get_db)):
+async def register(request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     form = UserCreateForm(request)
     await form.load_data()
     if await form.is_valid():
 
         try:
             await auth_route.register(request=request,
+                                      background_tasks=background_tasks,
                                       body=UserModel(username=form.username, email=form.email, password=form.password),
                                       db=db)
             return RedirectResponse(
