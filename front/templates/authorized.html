@@ -31,13 +31,16 @@
                 {% for photo in photos_user %}
                 <li class="list-group-item">
                     <img src="{{ photo.picture_url }}" alt="{{ photo.title }}" class="img-thumbnail">
-                    <p>Коментарі:</p>
-                    <ul>
-                      {% for comment in photo.comments %}
-                        <li>{{ comment.text }}</li>
-                      {% endfor %}
-                    </ul>
-                    <p>Теги: {{ photo.tags | map(attribute='name') | join(', ') }}</p>
+                    <p><b>Опис:</b></p>
+                    <p>{{ photo.description }}</p>
+                    <p><b>Коментарі:</b></p>
+                        <ul>
+                          {% for comment in photo.comments %}
+                            <li>{{ comment.text }}</li>
+                          {% endfor %}
+                        </ul>
+                    <p><b>Теги:</b></p>
+                    <p>{{ photo.tags | map(attribute='name') | join(', ') }}</p>
                     <form action="/add_comment" method="post" class="mb-2">
                         <input type="hidden" name="user_id" value="{{ photo.user_id }}">
                         <input type="hidden" name="picture_id" value="{{ photo.id }}">
@@ -51,9 +54,9 @@
         {% else %}
         <p>У користувача немає світлин.</p>
         {% endif %}
-<form action="/upload" method="get" class="mt-4">
-        <a href="/upload" class="btn btn-success">Завантажити світлину</a>
-</form>
+        <div>
+            <a href="/upload" class="btn btn-success">Завантажити світлину</a>
+        </div>
     <!-- Виведення списку світлин -->
     <div class="mt-4">
         <h2>Список світлин</h2>
@@ -62,13 +65,18 @@
             {% for photo in photos %}
             <li class="list-group-item">
                 <img src="{{ photo.picture_url }}" alt="{{ photo.title }}" class="img-thumbnail">
-                <p>Коментарі:</p>
+                <p><b>Автор:</b></p>
+                <p>{{ photo.user.username }}</p>
+                <p><b>Опис:</b></p>
+                <p>{{ photo.description }}</p>
+                <p><b>Коментарі:</b></p>
                     <ul>
                       {% for comment in photo.comments %}
                         <li>{{ comment.text }}</li>
                       {% endfor %}
                     </ul>
-                <p>Теги: {{ photo.tags | map(attribute='name') | join(', ') }}</p>
+                <p><b>Теги:</b></p>
+                <p>{{ photo.tags | map(attribute='name') | join(', ') }}</p>
                 <form action="/add_comment" method="post" class="mb-2">
                     <input type="hidden" name="user_id" value="1">
                     <input type="hidden" name="picture_id" value="{{ photo.id }}">

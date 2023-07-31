@@ -96,7 +96,7 @@ class Picture(Base):
 
     @aggregated('rating', Column(Numeric))
     def avg_rating(self):
-           return func.avg(Rating.rate)
+        return func.avg(Rating.rate)
     
     rating = relationship('Rating')
    
@@ -124,15 +124,15 @@ class Comment(Base):
     user = relationship('User', backref="comments")
     picture = relationship('Picture', backref="comments")
     edited = Column(Boolean, default=False)  # Поле, яке вказує, чи був коментар редагований
-    edited_at = Column(DateTime, nullable=True)  # Поле, яке зберігає час останньої редагування коментаря
+    edited_at = Column(DateTime, nullable=True)  # Поле, яке зберігає час останнього редагування коментаря
 
 
 class BlacklistToken(Base):
     __tablename__ = 'blacklist_tokens'
 
-   id = Column(Integer, primary_key=True)
-   token = Column(String(500), unique=True, nullable=False)
-   blacklisted_on = Column(DateTime, default=func.now())
+    id = Column(Integer, primary_key=True)
+    token = Column(String(500), unique=True, nullable=False)
+    blacklisted_on = Column(DateTime, default=func.now())
 
 
 class Rating(Base):
@@ -141,7 +141,7 @@ class Rating(Base):
     id = Column(Integer, primary_key=True)
     picture_id = Column('picture_id', ForeignKey(Picture.id, ondelete='CASCADE'), nullable=False)
     rate = Column(Integer, default=0)
-    user_id = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
+    user_id: int = Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), default=None)
     created_at = Column(DateTime, default=func.now())
 
-    user = relations
+    user = relationship('User', backref="rating")

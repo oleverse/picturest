@@ -43,7 +43,7 @@ class CommentBase(BaseModel):
 
 
 class CommentCreate(CommentBase):
-    pass
+    picture_id: int
 
 
 class CommentResponse(CommentBase):

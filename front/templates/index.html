@@ -32,13 +32,18 @@
             {% for photo in photos %}
             <li class="list-group-item">
                 <img src="{{ photo.picture_url }}" alt="{{ photo.title }}" class="img-thumbnail">
-                <p>Коментарі:</p>
+                <p><b>Автор:</b></p>
+                <p>{{ photo.user.username }}</p>
+                <p><b>Опис:</b></p>
+                <p>{{ photo.description }}</p>
+                <p><b>Коментарі:</b></p>
                     <ul>
                       {% for comment in photo.comments %}
                         <li>{{ comment.text }}</li>
                       {% endfor %}
                     </ul>
-                <p>Теги: {{ photo.tags | map(attribute='name') | join(', ') }}</p>
+                <p><b>Теги:</b></p>
+                <p>{{ photo.tags | map(attribute='name') | join(', ') }}</p>
             </li>
             {% endfor %}
         </ul>
