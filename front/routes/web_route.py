@@ -8,7 +8,8 @@ from psycopg2 import IntegrityError
 from sqlalchemy.orm import Session
 
 from api.database.db import get_db
-from api.repository.comment_service import create_comment
+from api.database.models import User
+from api.repository.comments import create_comment
 from api.repository.pictures import get_user_pictures, get_all_pictures
 from api.repository.users import add_to_blacklist
 from api.routes import auth as auth_route, pictures
@@ -23,9 +24,19 @@ template_dir = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=template_dir)
 
 
-def get_user_token(request: Request) -> str:
+async def get_user_token(request: Request) -> str:
     if request and "access_token" in request.cookies:
-        return request.cookies["access_token"].split(" ")[1].strip()
+        return request.cookies["access_token"].split()[1].strip()
+
+
+async def get_logged_in_user(request: Request, db: Session) -> User:
+    access_token = await get_user_token(request)
+    try:
+        logged_in_user = await auth_service.get_current_user(access_token, db)
+    except AttributeError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Bad access token!")
+    else:
+        return logged_in_user
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -38,13 +49,11 @@ async def root(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/authorized", response_class=HTMLResponse)
-async def home_page(request: Request, user_id: int = 1, db: Session = Depends(get_db)):
-    access_token = request.cookies.get("access_token")
-    if not access_token:
-        raise HTTPException(status_code=401, detail="Немає токену автентифікації")
+async def home_page(request: Request, db: Session = Depends(get_db)):
+    logged_in_user = await get_logged_in_user(request, db)
 
     all_pictures = await get_all_pictures(limit=5, offset=0, db=db)
-    pictures_user = await get_user_pictures(user_id=user_id, db=db)
+    pictures_user = await get_user_pictures(user_id=logged_in_user.id, db=db)
     response = templates.TemplateResponse("authorized.html", {
         "request": request,
         "photos_user": pictures_user,
@@ -72,12 +81,12 @@ async def upload_page(request: Request):
 async def add_comment(
         request: Request,
         comment_text: str = Form(...),
-        user_id: int = Form(...),
         picture_id: int = Form(...),
         db: Session = Depends(get_db)
 ):
+    logged_in_user = await get_logged_in_user(request, db)
     comment = await create_comment(comment_data=CommentCreate(text=comment_text, picture_id=picture_id),
-                                   user_id=user_id, db=db)
+                                   user=logged_in_user, db=db)
 
     if not comment:
         raise HTTPException(status_code=404, detail="Picture not found")
@@ -101,9 +110,9 @@ async def login(request: Request, db: Session = Depends(get_db)):
             response.headers["location"] = f"/authorized?user_id={logged_in_user.id}"
 
             return response
-        except HTTPException:
+        except HTTPException as http_ex:
             form.__dict__.update(msg="")
-            form.__dict__.get("errors").append("Incorrect Email or Password")
+            form.__dict__.get("errors").append(http_ex.detail)
             return templates.TemplateResponse("login.html", form.__dict__)
     return templates.TemplateResponse("/index.html", form.__dict__)
 
@@ -137,13 +146,14 @@ async def upload_photo_view(request: Request,
                             db: Session = Depends(get_db)
                             ):
     try:
-        user = await auth_service.get_current_user(token=get_user_token(request), db=db)
+        logged_in_user = await get_logged_in_user(request, db)
 
         tags_list = [tag_name.strip() for tag_name in re_split(r'@\s+,\s+', tags)]
-        await pictures.create_picture(description=description, file=file, tags=tags_list, db=db, current_user=user)
+        await pictures.create_picture(description=description, file=file, tags=tags_list,
+                                      db=db, current_user=logged_in_user)
 
         return RedirectResponse("/authorized?msg=Фото%20завантажено%20успішно!", status_code=status.HTTP_302_FOUND,
-                                headers={"Location": f"/authorized?user_id={user.id}"})
+                                headers={"Location": f"/authorized?user_id={logged_in_user.id}"})
     except HTTPException as http_ex:
         if http_ex.status_code == status.HTTP_401_UNAUTHORIZED:
             return templates.TemplateResponse("/fail.html", {
@@ -154,11 +164,11 @@ async def upload_photo_view(request: Request,
 
 @router.post("/logout_user")
 async def logout_user(request: Request, db: Session = Depends(get_db)):
-    access_token = request.cookies.get("access_token")
+    access_token = await get_user_token(request)
     if not access_token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    await add_to_blacklist(access_token[7:], db)
+    await add_to_blacklist(access_token, db)
     response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
 
     response.delete_cookie("access_token")

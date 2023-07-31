@@ -86,6 +86,17 @@ class UserResponse(BaseModel):
     detail: str = 'User successfully created'
 
 
+class UserStatusChange(BaseModel):
+    email: EmailStr
+
+
+class UserStatusResponse(BaseModel):
+    username: str
+    email: EmailStr
+    is_active: bool
+    updated_at: datetime
+
+
 class TokenModel(BaseModel):
     access_token: str
     refresh_token: str

@@ -6,8 +6,9 @@ from sqlalchemy.orm import Session
 from api.database.db import get_db
 from api.database.models import User
 from api.repository import pictures as repository_pictures
-from api.repository.comment_service import get_comments_by_picture_id
+from api.repository.comments import get_comments_by_picture_id
 from api.repository.searching_service import get_picture_by_id
+
 from api.schemas.essential import PictureResponse, PictureCreate, PictureResponseWithComments
 from api.services.auth import auth_service
 from api.services.cloud_picture import CloudImage
