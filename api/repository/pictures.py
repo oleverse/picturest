@@ -1,29 +1,37 @@
 from typing import List, Type
-
 from sqlalchemy.orm import Session
 
 from api.conf.config import settings
 from api.database.models import Picture, Tag, User
-from api.repository.tags import create_tag
-from api.schemas import PictureCreate
+from api.repository.tags import get_or_create_tag
+from api.schemas import PictureCreate, TagResponse
 from api.services.cloud_picture import CloudImage
 
 
-async def create_picture(description: str, tags: List[str], file_path: str, db: Session, user: User):
-    # If the number of tags is greater than the maximum, return an error message
-    if len(tags) > settings.max_tags:
-        return f"Error: Too many tags. The maximum is {settings.max_tags}."
+async def create_picture(picture: PictureCreate, db: Session, current_user: User):
+    # Створюємо список для зберігання об'єктів Tag
+    tag_objects = []
 
-    tags_list = []
-    if tags:
-        tags_list = await transformation_list_to_tag(tags[0].split(","), db)
+    # Для кожного тега в списку тегів
+    for tag_name in picture.tags:
+        # Викликаємо функцію get_or_create_tag та додаємо результат до списку
+        tag_objects.append(await get_or_create_tag(tag_name, db))
 
-    picture = Picture(picture_url=file_path, description=description, tags=tags_list, user_id=user.id)
+    # Створюємо нове зображення з переданими даними та списком тегів
+    picture = Picture(
+        picture_url=picture.picture_url,
+        description=picture.description,
+        tags=tag_objects,
+        user_id=current_user.id
+    )
+
+    # Додаємо зображення до бази даних
     db.add(picture)
     db.commit()
     db.refresh(picture)
 
     return picture
+
 
 
 def get_tag_by_name(tag_name: str, db: Session) -> Tag | None:

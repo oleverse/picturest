@@ -1,16 +1,19 @@
 from datetime import datetime, date
-from typing import List, Optional
+from typing import List, Optional, Dict
 from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict
 
 
 class TagModel(BaseModel):
+    id : int
     name: str = Field(max_length=100)
-
 
 class TagResponse(TagModel):
     model_config = ConfigDict(from_attributes=True)
+    tags: Optional[List[TagModel]]
+    id:  Optional[int]
 
-    id: int
+
+
 
 
 class PictureBase(BaseModel):
