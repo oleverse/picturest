@@ -1,30 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from api.database.db import get_db
-from api.database.models import Role, User
-from api.repository.comment_service import create_comment, update_comment, delete_comment_by_id, get_comment_by_id
-from api.schemas.essential import CommentCreate, CommentResponse
+from api.database.models import User
+from api.repository.comments import create_comment, update_comment, delete_comment_by_id, get_comment_by_id
+from api.schemas.essential import CommentCreate, CommentResponse, CommentBase
 from api.services.auth import auth_service
 
 
 router = APIRouter(prefix='/comments', tags=["comments"])
-
-
-@router.get("/", response_model=CommentResponse)
-async def add_comment(comment_data: CommentCreate, db: Session = Depends(get_db),
-                      current_user: User = Depends(auth_service.get_current_user)):
-    """
-    The add_comment function creates a new comment for the picture with the given id.
-
-    :param comment_data: CommentCreate: Pass the data from the request body to the function
-    :param db: Session: Get the database session
-    :param current_user: User: Get the user that is currently logged in
-    :return: A comment object, which is the same as the comment_data
-    """
-    comment = await create_comment(db, comment_data, current_user.id)
-    if not comment:
-        raise HTTPException(status_code=404, detail="Picture not found")
-    return comment
 
 
 @router.post("/", response_model=CommentResponse)
@@ -38,7 +21,7 @@ async def add_comment(comment_data: CommentCreate, db: Session = Depends(get_db)
     :param current_user: User: Get the user that is currently logged in
     :return: A comment object
     """
-    comment = await create_comment(db, comment_data, current_user.id)
+    comment = await create_comment(db, comment_data, current_user)
     if not comment:
         raise HTTPException(status_code=404, detail="Picture not found")
     return comment
@@ -46,7 +29,7 @@ async def add_comment(comment_data: CommentCreate, db: Session = Depends(get_db)
 
 @router.put("/{comment_id}", response_model=CommentResponse)
 async def edit_comment(
-        comment_data: CommentCreate,
+        comment_data: CommentBase,
         comment_id: int,
         user=Depends(auth_service.get_current_user),
         db: Session = Depends(get_db)):
@@ -59,7 +42,8 @@ async def edit_comment(
     :param db: Session: Get the database session
     :return: A CommentCreate object
     """
-    comment = await update_comment(db, comment_data, comment_id, user.id)
+    comment = await update_comment(db, comment_data, comment_id, user)
+
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
     return comment
@@ -78,7 +62,8 @@ async def delete_comment(
     :param db: Session: Get the database session
     :return: The deleted comment
     """
-    comment = await delete_comment_by_id(db, comment_id, current_user.id)
+    comment = await delete_comment_by_id(db, comment_id, current_user)
+
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
     # if current_user.role.name not in [Role.admin, Role.moderator]:

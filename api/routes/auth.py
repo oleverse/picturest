@@ -3,8 +3,10 @@ from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredent
 from sqlalchemy.orm import Session
 
 from api.database.db import get_db
+from api.database.models import User, RoleNames
 from api.repository import users as repository_users
-from api.schemas.essential import UserModel, UserResponse, TokenModel, RequestEmail
+from api.schemas.essential import RequestEmail, UserStatusResponse, UserStatusChange
+from api.schemas.essential import UserModel, UserResponse, TokenModel
 from api.services.auth import auth_service
 from api.services.email import send_confirmation_email
 
@@ -55,6 +57,8 @@ async def login(response: Response, body: OAuth2PasswordRequestForm = Depends(),
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Incorrect login or password')
     if not user.confirmed:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Email not confirmed')
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='The user is deactivated.')
     if not auth_service.verify_password(body.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Incorrect login or password')
 
@@ -152,3 +156,28 @@ async def logout(credentials: HTTPAuthorizationCredentials = Security(security),
 
     await repository_users.add_to_blacklist(token, db)
     return {"message": 'User has been logged out.'}
+
+
+@router.put("/users/deactivate", response_model=UserStatusResponse)
+async def user_deactivate(user_data: UserStatusChange, current_user: User = Depends(auth_service.get_current_user),
+                          db: Session = Depends(get_db)):
+    if current_user.role.name != RoleNames.admin.name:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only administrators can deactivate users!")
+
+    user = await repository_users.ban_user(user_data.email, current_user.id, db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found!")
+
+    return user
+
+
+@router.put("/users/activate", response_model=UserStatusResponse)
+async def user_activate(user_data: UserStatusChange, current_user: User = Depends(auth_service.get_current_user),
+                        db: Session = Depends(get_db)):
+    if current_user.role.name != RoleNames.admin.name:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only administrators can activate users!")
+    user = await repository_users.ban_user(user_data.email, current_user.id, db, is_active=True)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found!")
+
+    return user

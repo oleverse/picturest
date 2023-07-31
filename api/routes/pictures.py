@@ -5,15 +5,12 @@ from sqlalchemy.orm import Session
 
 from api.database.db import get_db
 from api.database.models import User
-
 from api.repository import pictures as repository_pictures
-from api.repository.comment_service import get_comments_by_picture_id
+from api.repository.comments import get_comments_by_picture_id
 
 from api.schemas.essential import PictureResponse, PictureCreate, PictureResponseWithComments
-
 from api.services.auth import auth_service
 from api.services.cloud_picture import CloudImage
-
 from api.conf.config import settings
 
 router = APIRouter(prefix='/pictures', tags=["pictures"])
@@ -64,7 +61,8 @@ async def get_picture(picture_id: int, with_comments: bool = True, db: Session =
     :param current_user: User: Get the current user
     :return: A picture object
     """
-    picture = await repository_pictures.get_picture(picture_id, current_user, db)
+    picture = await repository_pictures.get_picture(picture_id, db)
+    
     if picture is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
 
@@ -156,22 +154,3 @@ async def remove_picture(picture_id: int, db: Session = Depends(get_db),
     if picture is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found")
     return picture
-
-
-@router.get("/by_tag/{tag_name}", response_model=List[PictureResponse])
-async def get_pictures_by_tag(tag_name: str, current_user: User = Depends(auth_service.get_current_user),
-                              db: Session = Depends(get_db)):
-
-    """
-    The get_pictures_by_tag function is used to get all pictures with a specific tag.
-        The function takes in the tag name as an argument and returns a list of pictures that have that tag.
-
-    :param tag_name: str: Specify the tag name to search for
-    :param current_user: User: Get the current user that is logged in
-    :param db: Session: Pass the database session to the function
-    :return: A list of pictures
-    """
-    pictures = await repository_pictures.get_picture_by_tag(tag_name, current_user, db)
-    if not pictures:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Picture with tag {tag_name} not found")
-    return pictures
