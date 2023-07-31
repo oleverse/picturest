@@ -2,7 +2,7 @@ from fastapi import status
 from api.database.db import get_db
 from api.database.models import User, Picture
 from api.repository.comment_service import get_comments_by_picture_id
-from api.repository.searching_service import get_picture_by_id, search_by_description, search_by_tag, \
+from api.repository.search import search_by_description, search_by_tag, \
     search_pictures_by_user
 from api.schemas.essential import PictureResponse, PictureResponseWithComments
 from api.repository import pictures as repository_pictures
