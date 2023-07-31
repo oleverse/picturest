@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict, constr
 from api.conf.config import settings
 
 
@@ -84,6 +84,12 @@ class UserDb(BaseModel):
 class UserResponse(BaseModel):
     user: UserDb
     detail: str = 'User successfully created'
+
+
+class UserUpdate(BaseModel):
+    password: constr(min_length=8, max_length=100) = None
+    username: str
+    email: EmailStr
 
 
 class TokenModel(BaseModel):
