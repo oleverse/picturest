@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-
 from api.database.db import get_db
 from api.database.models import User
 from api.schemas.essential import UserUpdate, UserDb, UserModel
@@ -46,18 +45,22 @@ def view_user_profile(username: str, db: Session = Depends(get_db),
 @router.get("/profile/me", response_model=UserDb)
 def view_user_profile(username: str = Depends(auth_service.get_current_user),
                       current_user: User = Depends(auth_service.get_current_user)):
-    # Check if the user is allowed to view profiles
 
     if not current_user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
-    # Fetch the user from the database
     user = username
 
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    return user
+    user_data = UserDb(
+        id=user.id,
+        username=user.username,
+        email=user.email,
+        created_at=user.created_at,
+        avatar=user.avatar)
+    return user_data
 
 
 @router.put("/profile/me", response_model=UserModel)
