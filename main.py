@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from api.routes import pictures, transformations, comments, auth, tags, rating, search, profile
+from api.routes import pictures, transformations, comments, auth, tags, rating, search, profile, users
 from front.routes import web_route
 from sqlalchemy import text
 from api.database.db import get_db
@@ -16,8 +16,9 @@ app.include_router(auth.router, prefix='/api')
 app.include_router(transformations.router, prefix='/api')
 app.include_router(comments.router, prefix='/api')
 app.include_router(rating.router, prefix='/api')
-app.include_router(profile.router, prefix='/api')
 app.include_router(search.router, prefix='/api')
+app.include_router(profile.router, prefix='/api')
+app.include_router(users.router, prefix='/api')
 
 
 @app.get("/api/healthchecker")

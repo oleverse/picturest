@@ -1,13 +1,13 @@
 from datetime import datetime
-from typing import Type
+from typing import Type, List
 
 from fastapi import HTTPException, status
 from libgravatar import Gravatar
 from slugify import slugify
 from sqlalchemy.orm import Session
 
-from api.database.models import User, BlacklistToken, RoleNames, Role
-from api.schemas.essential import UserModel
+from api.database.models import User, BlacklistToken, RoleNames, Role, Picture, Comment
+from api.schemas.essential import UserModel, UserProfileModel, UserUpdate
 
 
 async def get_users_count(db: Session):
@@ -97,3 +97,58 @@ async def find_blacklisted_token(token: str, db: Session) -> None:
 async def remove_from_blacklist(token: str, db: Session) -> None:
     blacklist_token = db.query(BlacklistToken).filter(BlacklistToken.token == token).first()
     db.delete(blacklist_token)
+
+
+async def get_user_profile(username: str, db: Session) -> User | None:
+    user = db.query(User).filter(User.slug == username).first()  # slug or username  ??
+    user_profile = None
+    if user:
+        picture_count = db.query(Picture).filter(Picture.user_id == user.id).count()
+        comment_count = db.query(Comment).filter(Comment.user_id == user.id).count()
+        picture_count = 0 if not picture_count else picture_count
+        user_profile = UserProfileModel(
+            id=user.id, username=user.username, email=user.email, created_at=user.created_at, is_active=user.is_active,
+            number_pictures=picture_count, number_comments=comment_count)
+    return user_profile
+
+
+async def get_all_users(limit: int, offset: int, user: User, db: Session) -> List[Type[User]]:
+    pass
+#
+#     all_users = db.query(User).offset(offset).limit(limit).all()
+#     print(all_users[0].role, all_users[0].name, all_users[0].id, "Test")
+#     # if all_users:
+#     #     if not user.role == RoleNames.admin:
+#     #         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+#     #                             detail="This action only for admin person. You don't have a permit!")
+#     return all_users
+
+
+async def update_user_self(body: UserModel, user: User, db: Session) -> User | None:
+
+    user = db.query(User).filter(User.id == user.id).first()
+    if user:
+        user.username = body.username
+        user.email = body.email
+        user.updated_at = datetime.now()
+        db.commit()
+        db.refresh(user)
+    return user
+
+
+async def update_user_as_admin(body: UserUpdate, user: User, db: Session) -> Type[User] | None:
+    pass
+#
+#     user_to_update = db.query(User).filter(User.username == body.username).first()
+#     if user_to_update:
+#         print("roles", user.role, RoleNames)
+#         if user.role == RoleNames.admin:
+#             user_to_update.username = body.username
+#             user_to_update.email = body.email
+#             user_to_update.is_active = body.is_active
+#             user_to_update.user_role = body.role
+#             user_to_update.updated_at = datetime.now()
+#             db.commit()
+#         return user_to_update
+#     return None
+
