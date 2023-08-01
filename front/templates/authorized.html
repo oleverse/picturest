@@ -61,9 +61,9 @@
                             <p><b>Опис:</b></p>
                             <p>{{ photo.description }}</p>
                             <p><b>Коментарі:</b></p>
-                            <ul>
+                            <ul class="no-bullets">
                                 {% for comment in photo.comments %}
-                                <li>{{ photo.user.username }}: {{ comment.text }}</li>
+                                <li>{{ comment.user }}: {{ comment.text }}</li>
                                 {% endfor %}
                             </ul>
                             <p><b>Теги:</b></p>
@@ -106,9 +106,9 @@
                             <p><b>Опис:</b></p>
                             <p>{{ photo.description }}</p>
                             <p><b>Коментарі:</b></p>
-                            <ul>
+                            <ul class="no-bullets">
                                 {% for comment in photo.comments %}
-                                <li>{{ photo.user.username }}: {{ comment.text }}</li>
+                                <li>{{ comment.user.username }}: {{ comment.text }}</li>
 
                                 {% endfor %}
                             </ul>
