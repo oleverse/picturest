@@ -61,7 +61,7 @@
                             <p><b>Коментарі:</b></p>
                             <ul>
                                 {% for comment in photo.comments %}
-                                <li>{{ comment.text }}</li>
+                                <li>{{ photo.user.username }}: {{ comment.text }}</li>
                                 {% endfor %}
                             </ul>
                             <p><b>Теги:</b></p>
