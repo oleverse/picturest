@@ -7,15 +7,8 @@ from api.conf.config import settings
 class TagModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id : int
+    id: int
     name: str = Field(max_length=100)
-
-
-class TagResponse(TagModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    tags: Optional[List[TagModel]] = []
-    id:  Optional[int] = None
 
 
 class PictureBase(BaseModel):

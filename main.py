@@ -4,6 +4,7 @@ from api.routes import pictures, transformations, comments, auth, tags, rating, 
 from front.routes import web_route
 from sqlalchemy import text
 from api.database.db import get_db
+import uvicorn
 
 
 app = FastAPI()
@@ -35,3 +36,7 @@ def healthchecker(db: Session = Depends(get_db)):
 @app.get("/api/")
 def root():
     return {"message": "Welcome to PictuREST API!"}
+
+
+if __name__ == '__main__':
+    uvicorn.run("main:app", host='0.0.0.0')
