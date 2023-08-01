@@ -58,6 +58,7 @@ async def update_token(user: User, token: str | None, db: Session):
 async def confirm_email(email: str, db: Session) -> None:
     user = await get_user_by_email(email, db)
     user.confirmed = True
+    user.is_active = True
     db.commit()
 
 
