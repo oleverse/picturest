@@ -79,6 +79,10 @@
   --bs-highlight-bg: #fff3cd;
 }
 
+ul.no-bullets {
+  list-style: none;
+}
+
 *,
 *::before,
 *::after {
