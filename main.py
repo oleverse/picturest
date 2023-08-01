@@ -18,7 +18,6 @@ app.include_router(comments.router, prefix='/api')
 app.include_router(rating.router, prefix='/api')
 app.include_router(search.router, prefix='/api')
 app.include_router(profile.router, prefix='/api')
-app.include_router(search.router, prefix='/api')
 app.include_router(users.router, prefix='/api')
 
 
