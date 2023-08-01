@@ -1,17 +1,14 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict, constr
 from api.conf.config import settings
 
 
 class TagModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    name: str = Field(max_length=100)
-
-
-class TagResponse(TagModel):
     id: int
+    name: str = Field(max_length=100)
 
 
 class PictureBase(BaseModel):
@@ -84,7 +81,7 @@ class UserDb(BaseModel):
     email: EmailStr
     created_at: datetime
     avatar: Optional[str] = None
-
+    photos_count: int
 
 class UserProfileModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -101,6 +98,13 @@ class UserProfileModel(BaseModel):
 class UserResponse(BaseModel):
     user: UserDb
     detail: str = 'User successfully created'
+
+
+
+class UserUpdate(BaseModel):
+    password: constr(min_length=8, max_length=100) = None
+    username: str
+    email: EmailStr
 
 
 class UserStatusChange(BaseModel):
