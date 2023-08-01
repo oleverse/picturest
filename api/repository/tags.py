@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 
 from api.database.models import Tag, Picture
-from api.schemas.essential import TagModel, PictureResponse, TagResponse
+from api.schemas.essential import TagModel
 
 
 async def get_or_create_tag(tag_name: str, db: Session):
