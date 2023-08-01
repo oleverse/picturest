@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 
 from api.database.models import Picture, Tag, User
 from api.repository.tags import get_or_create_tag
-from api.schemas.essential import PictureCreate, TagResponse
+from api.schemas.essential import PictureCreate
 from api.services.cloud_picture import CloudImage
 from api.conf.config import settings
 
@@ -38,7 +38,6 @@ async def create_picture(description: str, tags: List[str], file_path: str, shar
     return picture
 
 
-
 def get_tag_by_name(tag_name: str, db: Session) -> Tag | None:
     """
     The get_tag_by_name function takes a tag name and returns the corresponding Tag object from the database.
@@ -50,7 +49,6 @@ def get_tag_by_name(tag_name: str, db: Session) -> Tag | None:
     """
     tag = db.query(Tag).filter(Tag.name == tag_name).first()
     return tag
-
 
 
 async def transformation_list_to_tag(tags: list, user: User, db: Session) -> List[Tag]:

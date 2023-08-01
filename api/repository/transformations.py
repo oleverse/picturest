@@ -15,12 +15,10 @@ async def get_picture_for_transformation(pict_id: int, user: User, db: Session) 
 
 
 async def set_transform_picture(picture_id: int, modify_url: str, user: User, db: Session) -> TransformedPicture | None:
-    # TODO roles
-
     """
     The set_transform_picture function queries the Picture in DB with the given picture_id and user.
-     If it finds one, it will create a new TransformedPicture object with url and id.
-     It will add this to the database and commit it. If there is an integrity error when we try to commit this change
+    If it finds one, it will create a new TransformedPicture object with url and id.
+    It will add this to the database and commit it. If there is an integrity error when we try to commit this change
     to our database (i.e., if there already exists such an entry), we rollback these changes so as not
 
     :param picture_id: int: Specify the picture to be modified
@@ -28,7 +26,10 @@ async def set_transform_picture(picture_id: int, modify_url: str, user: User, db
     :param user: User: Check if the user is allowed to delete the picture
     :param db: Session: Access the database
     :return: A transformed picture object
+
     """
+
+    # TODO roles
 
     picture = db.query(Picture).filter(and_(Picture.id == picture_id, Picture.user_id == user.id)).first()
     if picture:

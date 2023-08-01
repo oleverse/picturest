@@ -19,7 +19,7 @@ def update_user(db: Session, user_update: UserUpdate, current_user: User) -> Use
     if not user:
         raise HTTPException(status_code=404, detail="Користувача не знайдено")
 
-    for field, value in user_update.dict(exclude_unset=True).items():
+    for field, value in user_update.model_dump(exclude_unset=True).items():
         setattr(user, field, value)
 
     db.commit()
