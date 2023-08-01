@@ -162,7 +162,7 @@ async def upload_photo_view(request: Request,
         raise http_ex
 
 
-@router.post("/logout_user")
+@router.get("/logout_user")
 async def logout_user(request: Request, db: Session = Depends(get_db)):
     access_token = await get_user_token(request)
     if not access_token:
@@ -172,4 +172,5 @@ async def logout_user(request: Request, db: Session = Depends(get_db)):
     response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
 
     response.delete_cookie("access_token")
+
     return response

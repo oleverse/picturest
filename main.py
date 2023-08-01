@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
+from starlette.staticfiles import StaticFiles
 from api.routes import pictures, transformations, comments, auth, tags, rating, search, profile, users
 from front.routes import web_route
 from sqlalchemy import text
@@ -8,7 +9,7 @@ import uvicorn
 
 
 app = FastAPI()
-
+app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(web_route.router, include_in_schema=False)
 app.include_router(pictures.router, prefix='/api')
 app.include_router(tags.tags_router, prefix='/api')
