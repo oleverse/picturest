@@ -1,13 +1,14 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, text, Row
 from datetime import datetime, timedelta
-from typing import Type, List, Any
+from typing import Type, Any
+
+from sqlalchemy import or_, and_, Row
+from sqlalchemy.orm import Session
+
 from api.database.models import Picture, User, Tag
-from api.schemas.essential import PictureResponse
 
 
-async def search_pictures_by_query(db: Session, search_query: str = None, rating: int = None, date_added: str = None) -> \
-        list[Type[Picture]]:
+async def search_pictures_by_query(db: Session, search_query: str = None,
+                                   rating: int = None, date_added: str = None) -> list[Type[Picture]]:
     # Починаємо з базового запиту, що вибирає всі світлини
     query = db.query(Picture)
 
@@ -36,8 +37,8 @@ async def search_pictures_by_query(db: Session, search_query: str = None, rating
 #     return db.query(Picture).filter(Picture.tags.any(text(search_query)))
 
 
-def search_by_tag(db: Session, tag_name: str, rating: int = None, date_added: str = None) -> list[
-    Type[Picture]]:
+async def search_by_tag(db: Session, tag_name: str,
+                        rating: int = None, date_added: str = None) -> list[Type[Picture]]:
     # Починаємо з базового запиту, що вибирає всі світлини з вказаним тегом
     query = db.query(Picture).join(Picture.tags).filter(Tag.name == tag_name)
 
@@ -58,8 +59,8 @@ def search_by_tag(db: Session, tag_name: str, rating: int = None, date_added: st
     return query.all()
 
 
-async def search_users(db: Session, search_query: str = None, date_added: str = None) -> list[
-    Type[User]]:
+async def search_users(db: Session, search_query: str = None,
+                       date_added: str = None) -> list[Type[User]]:
     # Починаємо з базового запиту, що вибирає всіх користувачів
     query = db.query(User)
 

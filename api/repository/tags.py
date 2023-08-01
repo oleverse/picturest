@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 
 from api.database.models import Tag, Picture
-from api.schemas import TagModel, PictureResponse, TagResponse
+from api.schemas.essential import TagModel
 
 
 async def get_or_create_tag(tag_name: str, db: Session):
@@ -66,9 +66,7 @@ async def add_tags_to_picture(picture_id: int, tags: List[str], db: Session):
     if not picture:
         raise HTTPException(status_code=404, detail="Picture not found")
 
-
     processed_tags = process_tags(tags)
-
 
     new_tags = []
 
@@ -85,7 +83,6 @@ async def add_tags_to_picture(picture_id: int, tags: List[str], db: Session):
             db.refresh(tag)
         new_tags.append(tag)
 
-
     if len(picture.tags) + len(new_tags) > 5:
         transaction.rollback()
         raise HTTPException(status_code=400, detail="Too many tags. Only 5 tags allowed.")
@@ -97,9 +94,7 @@ async def add_tags_to_picture(picture_id: int, tags: List[str], db: Session):
         "id": picture.id,
         "created_at": picture.created_at,
         "tags": [TagModel(name=tag.name) for tag in picture.tags]
-
     }
-
 
 
 async def delete_tag_from_picture(picture_id: int, tag_id: int, db: Session):
@@ -115,12 +110,11 @@ async def delete_tag_from_picture(picture_id: int, tag_id: int, db: Session):
     if tag in picture.tags:
         picture.tags.remove(tag)
         db.commit()
+        db.refresh(picture)
 
-        return TagResponse(id=tag.id, name=tag.name, tags=None)
-
+        return picture
     else:
-        raise HTTPException(status_code=404, detail="Tag not found in the picture")
-
+        raise HTTPException(status_code=404, detail="The picture does not have such tag.")
 
 
 async def edit_tag(tag_id: int, tag_update: TagModel, db: Session):
@@ -130,6 +124,8 @@ async def edit_tag(tag_id: int, tag_update: TagModel, db: Session):
 
     tag.name = tag_update.name
     db.commit()
-    return TagResponse(id=tag.id, name=tag.name, tags=None)
+    db.refresh(tag)
+
+    return tag
 
 

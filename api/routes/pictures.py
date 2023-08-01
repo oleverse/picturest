@@ -121,10 +121,8 @@ async def update_picture(body: PictureCreate, picture_id: int, db: Session = Dep
     """
     The update_picture function updates a picture in the database.
         The function takes three arguments:
-            - body: PictureCreate, which is a Pydantic model that contains all of the information needed
-            to update a picture.
-            - picture_id: int, the id of the picture to be updated.  This value comes from
-                path parameters and must be passed into this function as such (see below).
+            - body: PictureCreate, which is a Pydantic model that contains all of the information needed to update a picture.
+            - picture_id: int, the id of the picture to be updated.  This value comes from path parameters and must be passed into this function as such (see below).
             - db: Session = Depends(get_db), which is an SQLAlchemy session object
 
     :param body: PictureCreate: Get the data from the request body
@@ -132,6 +130,7 @@ async def update_picture(body: PictureCreate, picture_id: int, db: Session = Dep
     :param db: Session: Get the database session
     :param current_user: User: Get the current user
     :return: A picture object
+
     """
     picture = await repository_pictures.update_picture(picture_id, body, current_user, db)
     if picture is None:
