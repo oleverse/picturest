@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <title>PictuREST - Користувачі</title>
+{% endblock %}
+
+{% block navigation %}
+    <form class="d-flex">
+        <div class="mt-4">
+            <a href="/upload" class="btn btn-success">Завантажити світлину</a>
+            <a href="/logout_user" class="btn btn-success">Вийти</a>
+        </div>
+    </form>
+{% endblock %}
+{% block content %}
+    <!-- Section-->
+    <section class="py-1">
+        <div class="container px-4 px-lg-5 mt-1">
+            <div class="row justify-content-center">
+                {% for user in users %}
+                {% include "parts/user_profile.html" %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endblock %}
