@@ -42,4 +42,5 @@ def root():
 
 
 if __name__ == '__main__':
+    # in order to run SSL version you need to generate certificate/private key pair
     uvicorn.run("main:app", host='0.0.0.0', ssl_keyfile='key.pem', ssl_certfile='cert.pem')
