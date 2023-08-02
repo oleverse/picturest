@@ -1,5 +1,6 @@
 from pathlib import Path
 from re import split as re_split
+from typing import Optional
 
 from fastapi import Request, APIRouter, Form, HTTPException, Depends, UploadFile, File, status, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -7,16 +8,19 @@ from fastapi.templating import Jinja2Templates
 from psycopg2 import IntegrityError
 from sqlalchemy.orm import Session
 
+import api.routes.profile
 from api.database.db import get_db
 from api.database.models import User
 from api.repository.comments import create_comment
 from api.repository.pictures import get_user_pictures, get_all_pictures
 from api.repository.users import add_to_blacklist
 from api.routes import auth as auth_route, pictures
-from api.schemas.essential import CommentCreate, UserModel
+from api.schemas.essential import CommentCreate, UserModel, UserStatusChange
 from api.services.auth import auth_service
 from api.services.cloud_picture import CloudImage
 from api.routes.search import search_by_description, search_by_tag, search_pictures_by_user
+from api.repository.users import get_all_users, get_user_profile
+from api.routes.profile import get_user_by_slug
 from front.routes.web_forms import LoginForm, UserCreateForm
 
 
@@ -41,7 +45,49 @@ async def get_logged_in_user(request: Request, db: Session) -> User:
         return logged_in_user
 
 # TODO: pagination instead hardcode
-PICTURES_PER_PAGE = 100
+PER_PAGE = 100
+
+
+@router.get("/admin/{action}/{user_slug}", response_class=HTMLResponse)
+async def admin_action(request: Request, user_slug: str, action: str, db: Session = Depends(get_db)):
+    logged_in_user = await get_logged_in_user(request, db)
+
+    user = await get_user_by_slug(slug=user_slug, db=db)
+    if user:
+        if action == 'activate':
+            await api.routes.profile.user_activate(user_data=UserStatusChange(email=user.email),
+                                                   current_user=logged_in_user, db=db)
+        else:
+            await api.routes.profile.user_deactivate(user_data=UserStatusChange(email=user.email),
+                                                     current_user=logged_in_user, db=db)
+
+    return RedirectResponse("/admin", status_code=status.HTTP_302_FOUND,
+                            headers={"Location": "/admin"})
+
+
+@router.get("/admin", response_class=HTMLResponse)
+async def admin(request: Request, db: Session = Depends(get_db)):
+    logged_in_user = await get_logged_in_user(request, db)
+
+    users = await get_all_users(limit=PER_PAGE, offset=0, user=logged_in_user, db=db)
+    response = templates.TemplateResponse("admin_area.html", {
+        "request": request,
+        "users": users,
+        "is_admin": True,
+        "your_id": logged_in_user.id
+    })
+    return response
+
+
+@router.get("/profile/{user_slug}", response_class=HTMLResponse)
+async def profile(request: Request, user_slug: str, db: Session = Depends(get_db)):
+    user = await get_user_by_slug(slug=user_slug, db=db)
+    response = templates.TemplateResponse("profile.html", {
+        "request": request,
+        "user": user,
+        "is_admin": False
+    })
+    return response
 
 
 @router.get("/tag/{tag_name}", response_class=HTMLResponse)
@@ -57,14 +103,13 @@ async def search(request: Request, tag_name: str, db: Session = Depends(get_db))
 
 @router.post("/search", response_class=HTMLResponse)
 async def search(request: Request, query: str = Form(...), db: Session = Depends(get_db)):
-    logged_in_user = await get_logged_in_user(request, db)
-
+    # logged_in_user = await get_logged_in_user(request, db)
     result1 = search_by_description(db=db, search_query=query) or []
     result2 = await search_by_tag(db=db, tag_name=query) or []
     result3 = search_pictures_by_user(db=db, user_query=query) or []
     response = templates.TemplateResponse("index.html", {
         "request": request,
-        "photos": [i for i in result1] + [i for i in result2] + [i for i in result3],
+        "photos": list(set([i for i in result1] + [i for i in result2] + [i for i in result3])),
         "get_qrcode_func": CloudImage.get_qrcode
     })
     return response
@@ -72,7 +117,7 @@ async def search(request: Request, query: str = Form(...), db: Session = Depends
 
 @router.get("/", response_class=HTMLResponse)
 async def root(request: Request, db: Session = Depends(get_db)):
-    all_pictures = await get_all_pictures(limit=PICTURES_PER_PAGE, offset=0, db=db)
+    all_pictures = await get_all_pictures(limit=PER_PAGE, offset=0, db=db)
     return templates.TemplateResponse("index.html", {
         "request": request,
         "photos": all_pictures,
@@ -84,7 +129,7 @@ async def root(request: Request, db: Session = Depends(get_db)):
 async def home_page(request: Request, db: Session = Depends(get_db)):
     logged_in_user = await get_logged_in_user(request, db)
 
-    all_pictures = await get_all_pictures(limit=PICTURES_PER_PAGE, offset=0, db=db)
+    all_pictures = await get_all_pictures(limit=PER_PAGE, offset=0, db=db)
     pictures_user = await get_user_pictures(user_id=logged_in_user.id, db=db)
     response = templates.TemplateResponse("authorized.html", {
         "request": request,

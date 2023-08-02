@@ -6,7 +6,7 @@
                 <h5 class="fw-bolder">{{ photo.title }}</h5>
                 <div class="mb-1">
                     <span class="mb-0"><b>Автор:</b></span>
-                    <span>{{ photo.user.username }}</span>
+                    <a href="/profile/{{photo.user.slug}}">{{ photo.user.username }}</a>
                 </div>
                 <p class="mb-1"><b>Опис:</b></p>
                 <p class="mb-2 ms-3 ">{{ photo.description }}</p>
@@ -23,7 +23,6 @@
                 <p class="ms-3">
                     {% for tag in photo.tags %}
                     <a href="/tag/{{ tag.name }}">{{ tag.name }}</a>
-<!--                    {{ photo.tags | map(attribute='name') | join(', ') }}-->
                     {% endfor %}
                 </p>
                 {% if photo.transformed_pictures %}

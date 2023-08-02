@@ -104,8 +104,8 @@ async def remove_from_blacklist(token: str, db: Session) -> None:
     db.delete(blacklist_token)
 
 
-async def get_user_profile(username: str, db: Session) -> User | None:
-    user = db.query(User).filter(User.slug == username).first()  # slug or username  ??
+async def get_user_profile(slug: str, db: Session) -> User | None:
+    user = db.query(User).filter(User.slug == slug).first()  # slug or username  ??
     user_profile = None
     if user:
         picture_count = db.query(Picture).filter(Picture.user_id == user.id).count()
@@ -122,7 +122,7 @@ async def get_all_users(limit: int, offset: int, user: User, db: Session) -> Lis
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="This action only for admin person. You don't have a permission!")
 
-    all_users = db.query(User).all()
+    all_users = db.query(User).order_by(User.id).all()
 
     if all_users:
         return all_users
