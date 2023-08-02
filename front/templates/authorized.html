@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 
 {% block title %}
-    <title>PictuREST - Головна</title>
+    <title>PictuREST - Головна - {{ user.username }}</title>
 {% endblock %}
 
 {% block navigation %}
     <form class="d-flex">
         <div class="mt-4">
+            {% if user.role.name == 'admin' %}
             <a href="/admin" class="btn btn-secondary">Адмін</a>
+            {% endif %}
             <a href="/upload" class="btn btn-success">Завантажити світлину</a>
             <a href="/logout_user" class="btn btn-success">Вийти</a>
         </div>

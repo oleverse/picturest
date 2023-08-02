@@ -14,6 +14,10 @@
                     <span>{{ user.slug }}</span>
                 </div>
                 <div class="mb-1">
+                    <span class="mb-0"><b>Роль:</b></span>
+                    <span>{{ user.role.name }}</span>
+                </div>
+                <div class="mb-1">
                     <span class="mb-0"><b>Email:</b></span>
                     <span>****{{ user.email[4:(user.email|length)-5] }}*****</span>
                 </div>

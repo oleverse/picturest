@@ -14,7 +14,12 @@
                 <ul class="no-bullets ps-3">
                     {% for comment in photo.comments %}
                     <li>
-                        <span style="font-size: smaller;">[{{ comment.user.updated_at.strftime("%d.%m.%y %H:%M:%S") }} by <i>{{ comment.user.username }}</i>]:</span>
+                        <span style="font-size: smaller;">
+                            [{{ comment.user.updated_at.strftime("%d.%m.%y %H:%M:%S") }} by
+                            <a href="/profile/{{comment.user.slug}}">
+                                <i>{{ comment.user.username }}</i>]
+                            </a>:
+                        </span>
                         <p>{{ comment.text }}</p>
                     </li>
                     {% endfor %}
