@@ -33,11 +33,13 @@ async def read_users_me(username: str, current_user: User = Depends(auth_service
 
 
 @router.get('/all', response_model=List[UserDb])
-async def get_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    all_users = await repository_users.get_all_users(skip, limit, User(id=1), db)
+async def get_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db),
+                    current_user: User = Depends(auth_service.get_current_user)):
+    all_users = await repository_users.get_all_users(skip, limit, current_user, db)
     if all_users is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="NOT_FOUND")
+    UserDb.model_validate(all_users[0])
     return all_users
 
 

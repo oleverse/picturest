@@ -15,7 +15,7 @@ from api.repository.search import search_by_description, search_by_tag, search_p
 from api.services.auth import auth_service
 
 # Створюємо новий роутер з префіксом та тегом
-router = APIRouter(prefix='/search', tags=["Search"])
+router = APIRouter(prefix='/search', tags=["search"])
 
 
 # Ендпоінт для отримання світлини за її ідентифікатором
@@ -35,7 +35,7 @@ def search_pictures_by_description(
     return results
 
 
-@router.get("/tag/", response_model=List[PictureResponse])
+@router.get("/tag/", response_model=List[PictureResponse], include_in_schema=False)
 async def search_pictures_by_tag(
         search_query: str = Query(None, min_length=1, max_length=100),
         order_by: Optional[str] = Query(None, regex="^(rating|date_added)$"),
@@ -53,12 +53,12 @@ async def search_pictures_by_tag(
 
 
 # Ендпоінт для пошуку користувачів за іменем, електронною поштою або іншими критеріями GET /pictures/users/search
-@router.get("/admin/{picture_id}", response_model=List[PictureResponse])
+@router.get("/search_by_username", response_model=List[PictureResponse])
 async def search_user_by_admin_and_moder(user_query: str = Query(None, min_length=1, max_length=100),
-                                             db: Session = Depends(get_db),
-                                             current_user: User = Depends(auth_service.get_current_user)):
+                                         db: Session = Depends(get_db),
+                                         current_user: User = Depends(auth_service.get_current_user)):
     # Перевіряємо чи користувач є модератором або адміністратором
-    if current_user.role_id not in ['admin', 'moderator']:
+    if current_user.role.name not in ['admin', 'moderator']:
         raise HTTPException(status_code=403, detail="You don't have permission to perform this action.")
 
     pictures = search_pictures_by_user(db, user_query)
@@ -67,7 +67,7 @@ async def search_user_by_admin_and_moder(user_query: str = Query(None, min_lengt
 
 @router.get("/by_tag/{tag_name}", response_model=List[PictureResponse])
 async def get_pictures_by_tag(tag_name: str, db: Session = Depends(get_db)):
-    pictures = await repository_pictures.get_picture_by_tag(tag_name, db)
+    pictures = await repository_pictures.get_picture_by_tag(tag_name, db=db)
     if not pictures:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Picture with tag {tag_name} not found")
     return pictures

@@ -183,13 +183,12 @@ async def update_picture(picture_id: int, body: PictureCreate, user: User, db: S
         return picture
 
 
-async def get_picture_by_tag(tag_name: str, user: User, db: Session) -> list[Type[Picture]]:
+async def get_picture_by_tag(tag_name: str, db: Session) -> list[Type[Picture]]:
     """
     The get_picture_by_tag returns a list of pictures for tag with name tag_name
 
     :param tag_name: str: Specify the tag name to search for
     :param db: Session: Pass in the database session
-    :param user: User
     :return: A list of picture objects
     """
-    return db.query(Picture).join(Picture.tags).filter(Tag.name == tag_name and Picture.user_id == user.id).all()
+    return db.query(Picture).join(Picture.tags).filter(Tag.name == tag_name).all()

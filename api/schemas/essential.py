@@ -54,8 +54,9 @@ class CommentResponse(CommentBase):
 
 class PictureResponse(PictureBase):
     id: int
-    shared: bool
+    shared: Optional[bool] = None
     created_at: datetime
+    tags: Optional[List[TagModel]] = []
 
 
 class PictureResponseWithComments(PictureResponse):
@@ -63,6 +64,8 @@ class PictureResponseWithComments(PictureResponse):
 
 
 class UserModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     username: str
     email: EmailStr
     password: str = Field(min_length=0, max_length=14)
@@ -76,12 +79,21 @@ class UserUpdate(UserModel):
 class UserDb(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
+    id: Optional[int] = None
     username: str
-    email: EmailStr
+    email: Optional[EmailStr] = None
     created_at: datetime
     avatar: Optional[str] = None
-    photos_count: int
+
+
+class UserDbStatus(UserDb):
+    is_active: bool
+
+
+class UserDbExtra(UserDb):
+    photos_count: Optional[int] = None
+    comments_count: Optional[int] = None
+
 
 class UserProfileModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -100,9 +112,8 @@ class UserResponse(BaseModel):
     detail: str = 'User successfully created'
 
 
-
-class UserUpdate(BaseModel):
-    password: constr(min_length=8, max_length=100) = None
+class UserProfileUpdate(BaseModel):
+    password: constr(min_length=5, max_length=100) = None
     username: str
     email: EmailStr
 

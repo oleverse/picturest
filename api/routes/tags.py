@@ -54,10 +54,11 @@ async def add_tags(picture_id: int, tags: List[str] = Form(None), db: Session = 
 
 @tags_router.delete("/pictures/{picture_id}/tags/{tag_id}", response_model=PictureResponse)
 async def delete_tag_from_picture(picture_id: int, tag_id: int, db: Session = Depends(get_db)):
-    return await repository_tags.delete_tag_from_picture(picture_id, tag_id, db)
+    PictureResponse.model_validate(result := await repository_tags.delete_tag_from_picture(picture_id, tag_id, db))
+    return result
 
 
-@tags_router.put("/tags/{tag_id}", response_model=TagModel)
+@tags_router.put("/tags/{tag_id}", response_model=TagModel, include_in_schema=False)
 async def edit_tag(tag_id: int, tag_update: TagModel = Body(...), db: Session = Depends(get_db)):
     return await repository_tags.edit_tag(tag_id, tag_update, db)
 

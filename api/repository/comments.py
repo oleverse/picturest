@@ -64,14 +64,5 @@ async def get_comment_by_id(db: Session, comment_id: int):
     return db.query(Comment).filter(Comment.id == comment_id).first()
 
 
-async def delete_comment(db: Session, comment_id: int):
-    comment = db.query(Comment).filter(Comment.id == comment_id).first()
-    if comment:
-        db.delete(comment)
-        db.commit()
-        return comment
-    return None
-
-
 async def get_comments_by_picture_id(db: Session, picture_id: int) -> list[Type[Comment]]:
     return db.query(Comment).filter(Comment.picture_id == picture_id).all()

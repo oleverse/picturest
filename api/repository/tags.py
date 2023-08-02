@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from fastapi import HTTPException
 
+from api.conf.config import settings
 from api.database.models import Tag, Picture
 from api.schemas.essential import TagModel
 
@@ -83,18 +84,17 @@ async def add_tags_to_picture(picture_id: int, tags: List[str], db: Session):
             db.refresh(tag)
         new_tags.append(tag)
 
-    if len(picture.tags) + len(new_tags) > 5:
+    if len(picture.tags) + len(new_tags) > settings.max_tags:
         transaction.rollback()
-        raise HTTPException(status_code=400, detail="Too many tags. Only 5 tags allowed.")
+        raise HTTPException(status_code=400, detail=f"Too many tags. Only {settings.max_tags} tags allowed.")
 
     picture.tags.extend(new_tags)
-    transaction.commit()
+    try:
+        transaction.commit()
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="Tag already exists.")
 
-    return {
-        "id": picture.id,
-        "created_at": picture.created_at,
-        "tags": [TagModel(name=tag.name) for tag in picture.tags]
-    }
+    return picture
 
 
 async def delete_tag_from_picture(picture_id: int, tag_id: int, db: Session):

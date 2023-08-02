@@ -75,7 +75,7 @@ async def get_picture(picture_id: int, with_comments: bool = True, db: Session =
     return picture
 
 
-@router.get("/pictures/", response_model=List[PictureResponse])
+@router.get("/pictures/", response_model=List[PictureResponseWithComments])
 async def get_all_pictures(limit: int = Query(10, le=100), offset: int = 0, db: Session = Depends(get_db)):
     """
     The get_all_pictures function returns a list of all pictures in the database which is allowed for sharing
