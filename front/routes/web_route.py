@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 import api.routes.profile
 from api.database.db import get_db
-from api.database.models import User
+from api.database.models import User, RoleNames
 from api.repository.comments import create_comment
 from api.repository.pictures import get_user_pictures, get_all_pictures
 from api.repository.users import add_to_blacklist
@@ -69,14 +69,19 @@ async def admin_action(request: Request, user_slug: str, action: str, db: Sessio
 async def admin(request: Request, db: Session = Depends(get_db)):
     logged_in_user = await get_logged_in_user(request, db)
 
-    users = await get_all_users(limit=PER_PAGE, offset=0, user=logged_in_user, db=db)
-    response = templates.TemplateResponse("admin_area.html", {
-        "request": request,
-        "users": users,
-        "is_admin": True,
-        "your_id": logged_in_user.id
-    })
-    return response
+    if logged_in_user.role.name == RoleNames.admin.name:
+        users = await get_all_users(limit=PER_PAGE, offset=0, user=logged_in_user, db=db)
+        response = templates.TemplateResponse("admin_area.html", {
+            "request": request,
+            "users": users,
+            "is_admin": logged_in_user.role.name == RoleNames.admin.name,
+            "your_id": logged_in_user.id
+        })
+
+        return response
+    else:
+        return RedirectResponse("/authorized", status_code=status.HTTP_302_FOUND,
+                                headers={"Location": "/authorized"})
 
 
 @router.get("/profile/{user_slug}", response_class=HTMLResponse)
@@ -135,7 +140,8 @@ async def home_page(request: Request, db: Session = Depends(get_db)):
         "request": request,
         "photos_user": pictures_user,
         "photos": all_pictures,
-        "get_qrcode_func": CloudImage.get_qrcode
+        "get_qrcode_func": CloudImage.get_qrcode,
+        "user": logged_in_user
     })
     return response
 
