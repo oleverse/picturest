@@ -1,0 +1,52 @@
+<div class="col-3 mb-4">
+    <div class="card h-100">
+        <img src="{{ user.avatar }}" alt="{{ user.username }}" class="card-img-top img-thumbnail">
+        <div class="card-body py-0 px-2">
+            <div>
+                <h5 class="fw-bolder">
+                    {{ user.username }}
+                    {% if your_id == user.id %}
+                    (ви)
+                    {% endif %}
+                </h5>
+                <div class="mb-1">
+                    <span class="mb-0"><b>Slug:</b></span>
+                    <span>{{ user.slug }}</span>
+                </div>
+                <div class="mb-1">
+                    <span class="mb-0"><b>Email:</b></span>
+                    <span>****{{ user.email[4:(user.email|length)-5] }}*****</span>
+                </div>
+                <p class="mb-1"><b>Зареєстрований:</b></p>
+                <p class="mb-2 ms-3 ">{{ user.created_at.strftime("%d.%m.%y %H:%M:%S") }}</p>
+                <p class="mb-1"><b>Коментарі ({{ user.comments|length }}):</b></p>
+                <ul class="no-bullets ps-3">
+                    {% for comment in user.comments %}
+                    <li>
+                        <span>ID світлини: {{ comment.picture_id }}</span>
+                        <span style="font-size: smaller;">[{{ comment.user.updated_at.strftime("%d.%m.%y %H:%M:%S") }}]:</span>
+                        <p>{{ comment.text }}</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <p class="mb-1"><b>Кількість світлин:</b> {{ user.pictures|length }}</p>
+                <p class="mb-1">
+                    <b>Статус:</b>
+                    {% if is_admin %}
+                        {% if user.is_active %}
+                            <a href="/admin/deactivate/{{ user.slug }}" title="Деактивувати">Активний</a>
+                        {% else %}
+                            <a href="/admin/activate/{{ user.slug }}" title="Активувати">Деактивований</a>
+                        {% endif %}
+                    {% else %}
+                        {% if user.is_active %}
+                            <span>Активний</span>
+                        {% else %}
+                            <span>Деактивований</span>
+                        {% endif %}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
