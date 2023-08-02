@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <title>PictuREST - Помилка!</title>
+{% endblock %}
+{% block navigation %}
+                    <form class="d-flex">
+                        <div class="mt-4">
+                            <a class="btn btn-primary" href="/authorized">Повернутися на головну сторінку</a>
+                        </div>
+                    </form>
+{% endblock %}
+{% block content %}
+        <!-- Header-->
+        <header class="bg-dark py-5">
+            <div class="success-page"> <!-- Внутрішній блок для сторінки помилки -->
+        <h2>Виникла помилка!</h2>
+        {{ error }}
+        <div>
+            <a class="btn btn-primary" href="/authorized">Повернутися на головну сторінку</a>
+        </div>
+    </div>
+        </header>
+{% endblock %}

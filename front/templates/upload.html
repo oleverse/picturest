@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>PictuREST Завантажити світлину</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Bootstrap icons-->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+        <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    </head>
+    <body>
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container px-4 px-lg-5">
+                <a class="navbar-brand" href="/authorized">PictuREST</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="/authorized">Home</a></li>
+                    </ul>
+                    <form class="d-flex">
+                        <div class="mt-4">
+
+            <a class="btn btn-primary" href="/authorized">Повернутися на головну сторінку</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </nav>
+        <!-- Header-->
+        <header class="bg-dark py-5">
+            <div class="container px-4 px-lg-5 my-5">
+                <div class="text-center text-white">
+                    <h1 class="display-4 fw-bolder">PictuREST</h1>
+                    <p class="lead fw-normal text-white-50 mb-0"></p>
+                </div>
+            </div>
+        </header>
+        <footer class="py-5 bg-dark">
+            <div class="container">
+        <h2 class="mt-4">Завантажити світлину</h2>
+        <form action="/upload" method="post" enctype="multipart/form-data" class="mt-4">
+            <div class="mb-3">
+                <label for="file" class="form-label">Виберіть файл:</label>
+                <input type="file" id="file" name="file" accept="image/*" required class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Опис світлини:</label>
+                <textarea id="description" name="description" required class="form-control"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="tags" class="form-label">Теги (розділяйте комою):</label>
+                <input type="text" id="tags" name="tags" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Завантажити світлину</button>
+        </form>
+    </div>
+
+
+        <!-- Footer-->
+        <footer class="py-5 bg-dark">
+            <div class="container"><p class="m-0 text-center text-white"></p></div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+    </body>
+</html>

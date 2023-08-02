@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}
+        <title>PictuREST - Реєстрація</title>
+{% endblock %}
+{% block navigation %}
+                    <form class="d-flex">
+                        <div class="mt-4">
+                    <a class="btn btn-primary" href="/">Повернутися на головну сторінку</a>
+                        </div>
+                    </form>
+{% endblock %}
+{% block content %}
+        <!-- Header-->
+        <header class="bg-dark py-5">
+            <div class="container">
+        <!-- Форма для реєстрації -->
+        <form action="/register" method="post" class="mt-4">
+            <div class="mb-3">
+                <label for="username" class="form-label">Ім'я користувача:</label>
+                <input type="text" id="username" name="username" required class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" id="email" name="email" required class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Пароль:</label>
+                <input type="password" id="password" name="password" required class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Зареєструватися</button>
+        </form>
+    </div>
+        </header>
+{% endblock %}

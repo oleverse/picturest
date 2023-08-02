@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <title>PictuREST - Головна</title>
+{% endblock %}
+
+{% block navigation %}
+    <form class="d-flex">
+        <div class="mt-4">
+            <a href="/login" class="btn btn-primary me-2">Увійти</a>
+            <a href="/register" class="btn btn-secondary">Зареєструватися</a>
+        </div>
+    </form>
+{% endblock %}
+{% block content %}
+    <!-- Section-->
+    <section class="py-1">
+        <div class="container px-4 px-lg-5 mt-1">
+            <div class="row justify-content-center">
+
+                <!-- Тут список світлин, використовуючи шаблонізатор Jinja -->
+                {% for photo in photos %}
+                {% include "parts/pictures_list.html" %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endblock %}
