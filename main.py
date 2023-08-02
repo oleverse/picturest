@@ -10,16 +10,17 @@ import uvicorn
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/sphinx", StaticFiles(directory="docs/_build/html"), name="sphinx")
 app.include_router(web_route.router, include_in_schema=False)
 app.include_router(pictures.router, prefix='/api')
 app.include_router(tags.tags_router, prefix='/api')
 app.include_router(auth.router, prefix='/api')
 app.include_router(transformations.router, prefix='/api')
 app.include_router(comments.router, prefix='/api')
-app.include_router(rating.router, prefix='/api')
+app.include_router(rating.router, prefix='/api', include_in_schema=False)
 app.include_router(search.router, prefix='/api')
 app.include_router(profile.router, prefix='/api')
-app.include_router(users.router, prefix='/api')
+# app.include_router(users.router, prefix='/api')
 
 
 @app.get("/api/healthchecker")
@@ -35,10 +36,10 @@ def healthchecker(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Error connecting to the database")
 
 
-@app.get("/api/")
+@app.get("/api/", include_in_schema=False)
 def root():
     return {"message": "Welcome to PictuREST API!"}
 
 
 if __name__ == '__main__':
-    uvicorn.run("main:app", host='0.0.0.0')
+    uvicorn.run("main:app", host='0.0.0.0', ssl_keyfile='key.pem', ssl_certfile='cert.pem')

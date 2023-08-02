@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Type, List
+import uuid
 
 from fastapi import HTTPException, status
 from libgravatar import Gravatar
@@ -42,11 +43,15 @@ async def create_user(body: UserModel, db: Session):
         role_id=role.id
     )
     # new_user = User(**body.model_dump(), avatar=avatar)
-    new_user.slug = slugify(body.username)
+    new_user.slug = str(uuid.uuid4().hex)
 
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    new_user.slug = slugify(f"{body.username}-{new_user.id}")
+    db.commit()
+    db.refresh(new_user)
+
     return new_user
 
 
@@ -113,15 +118,14 @@ async def get_user_profile(username: str, db: Session) -> User | None:
 
 
 async def get_all_users(limit: int, offset: int, user: User, db: Session) -> List[Type[User]]:
-    pass
-#
-#     all_users = db.query(User).offset(offset).limit(limit).all()
-#     print(all_users[0].role, all_users[0].name, all_users[0].id, "Test")
-#     # if all_users:
-#     #     if not user.role == RoleNames.admin:
-#     #         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-#     #                             detail="This action only for admin person. You don't have a permit!")
-#     return all_users
+    if not user.role != RoleNames.admin.name:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="This action only for admin person. You don't have a permission!")
+
+    all_users = db.query(User).all()
+
+    if all_users:
+        return all_users
 
 
 async def update_user_self(body: UserModel, user: User, db: Session) -> User | None:
@@ -141,7 +145,6 @@ async def update_user_as_admin(body: UserUpdate, user: User, db: Session) -> Typ
 #
 #     user_to_update = db.query(User).filter(User.username == body.username).first()
 #     if user_to_update:
-#         print("roles", user.role, RoleNames)
 #         if user.role == RoleNames.admin:
 #             user_to_update.username = body.username
 #             user_to_update.email = body.email
